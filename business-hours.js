@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const CURRENT_TIMESTAMP = '2025-03-25 21:21:11';
+    // Constants for current timestamp and user
+    const CURRENT_TIMESTAMP = '2025-03-25 22:43:53';
     const CURRENT_USER = 'rkritzar54';
-    
+
     // Get business hours from localStorage or use defaults
     function getBusinessHours() {
         const stored = localStorage.getItem('businessHours');
@@ -22,18 +23,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const businessHours = getBusinessHours();
 
+    // Determine which page we're on
+    const isAdminPage = window.location.pathname.includes('admin.html');
+    const isBusinessHoursPage = window.location.pathname.includes('business-hours.html');
+
+    // Initialize appropriate functionality based on the page
+    if (isAdminPage) {
+        initializeAdminFunctionality();
+    }
+    
+    if (isBusinessHoursPage) {
+        initializeBusinessHoursPage();
+    }
+
+    function initializeAdminFunctionality() {
+        // Admin-specific initialization
+        const businessHoursForm = document.getElementById('businessHoursForm');
+        if (businessHoursForm) {
+            loadBusinessHoursForm();
+            businessHoursForm.addEventListener('submit', saveBusinessHours);
+        }
+    }
+
+    function initializeBusinessHoursPage() {
+        // Business hours page initialization
+        initializeAll();
+        setupBookingModal();
+        
+        // Update every minute
+        setInterval(initializeAll, 60000);
+    }
+
     // Function to convert EDT time to user's local time
     function convertEDTtoLocal(timeStr) {
         if (!timeStr) return '';
         
         const [hours, minutes] = timeStr.split(':').map(Number);
         
-        // Create date object with the current date in EDT
         const edtDate = new Date();
-        // EDT is UTC-4
         edtDate.setUTCHours(hours + 4, minutes, 0, 0);
         
-        // Now create a new date object in local time
         const localDate = new Date(edtDate.getTime());
         
         return localDate.toLocaleTimeString('en-US', {
@@ -51,16 +80,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (daySchedule.closed) return false;
 
-        // Get current time in EDT
         const edtNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
         const currentHour = edtNow.getHours();
         const currentMinute = edtNow.getMinutes();
         
-        // Convert business hours to 24-hour format
         const [openHour, openMinute] = daySchedule.open.split(':').map(Number);
         const [closeHour, closeMinute] = daySchedule.close.split(':').map(Number);
 
-        // Convert to minutes since midnight for comparison
         const currentMinutes = (currentHour * 60) + currentMinute;
         const openMinutes = (openHour * 60) + openMinute;
         const closeMinutes = (closeHour * 60) + closeMinute;
@@ -68,151 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
     }
 
-        // Update the booking form submission handler
-    const bookingForm = document.getElementById('bookingForm');
-    if (bookingForm) {
-        bookingForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const formData = {
-                id: Date.now(),
-                name: document.getElementById('name').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                phone: document.getElementById('phone').value.trim(),
-                date: document.getElementById('date').value,
-                time: document.getElementById('time').value,
-                service: document.getElementById('service').value,
-                notes: document.getElementById('notes').value.trim(),
-                consent: document.getElementById('consent').checked,
-                status: 'pending',
-                submittedBy: CURRENT_USER,
-                submissionTime: new Date(CURRENT_TIMESTAMP).toISOString()
-            };
-
-            // Validate the form
-            if (!formData.consent) {
-                alert('Please agree to the terms and conditions.');
-                return;
-            }
-
-            if (!formData.service) {
-                alert('Please select a service type.');
-                return;
-            }
-
-            // Check if the selected date and time are within business hours
-            const selectedDay = new Date(formData.date).getDay();
-            const daySchedule = businessHours[DAYS[selectedDay]];
-
-            if (daySchedule.closed) {
-                alert('Selected day is not available for booking. Please choose another day.');
-                return;
-            }
-
-            const [selectedHour, selectedMinute] = formData.time.split(':').map(Number);
-            const [openHour, openMinute] = daySchedule.open.split(':').map(Number);
-            const [closeHour, closeMinute] = daySchedule.close.split(':').map(Number);
-
-            const selectedMinutes = (selectedHour * 60) + selectedMinute;
-            const openMinutes = (openHour * 60) + openMinute;
-            const closeMinutes = (closeHour * 60) + closeMinute;
-
-            if (selectedMinutes < openMinutes || selectedMinutes >= closeMinutes) {
-                alert('Selected time is outside of business hours. Please choose a time between ' +
-                      convertEDTtoLocal(daySchedule.open) + ' and ' + convertEDTtoLocal(daySchedule.close));
-                return;
-            }
-
-            // Save to localStorage
-            const bookings = JSON.parse(localStorage.getItem('bookingResponses') || '[]');
-            bookings.push(formData);
-            localStorage.setItem('bookingResponses', JSON.stringify(bookings));
-
-            // Clear form and close modal
-            bookingForm.reset();
-            document.getElementById('bookingModal').style.display = 'none';
-
-            alert('Thank you! Your booking request has been submitted and is pending approval.');
-        });
-    }
-
-    // Update the modal handling
-    const bookingModal = document.getElementById('bookingModal');
-    const bookingButton = document.getElementById('bookingButton');
-    const closeModalButton = document.querySelector('.modal-close');
-
-    if (bookingButton) {
-        bookingButton.addEventListener('click', function() {
-            // Set date constraints
-            const now = new Date(CURRENT_TIMESTAMP);
-            const minDate = new Date(now);
-            minDate.setDate(minDate.getDate() + 1); // 24-hour advance notice
-
-            const maxDate = new Date(now);
-            maxDate.setDate(maxDate.getDate() + 30); // 30 days max advance booking
-
-            const dateInput = document.getElementById('date');
-            if (dateInput) {
-                dateInput.min = minDate.toISOString().split('T')[0];
-                dateInput.max = maxDate.toISOString().split('T')[0];
-            }
-
-            // Set hidden fields
-            document.getElementById('submissionTime').value = CURRENT_TIMESTAMP;
-            document.getElementById('submittedBy').value = CURRENT_USER;
-
-            // Reset form
-            bookingForm.reset();
-
-            // Show modal
-            bookingModal.style.display = 'block';
-        });
-    }
-
-    if (closeModalButton) {
-        closeModalButton.addEventListener('click', function() {
-            bookingModal.style.display = 'none';
-        });
-    }
-
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        if (event.target === bookingModal) {
-            bookingModal.style.display = 'none';
-        }
-    });
-
-    // Update the available time slots based on selected date
-    const dateInput = document.getElementById('date');
-    if (dateInput) {
-        dateInput.addEventListener('change', function() {
-            const selectedDate = new Date(this.value);
-            const dayOfWeek = selectedDate.getDay();
-            const daySchedule = businessHours[DAYS[dayOfWeek]];
-            const timeInput = document.getElementById('time');
-
-            if (!timeInput) return;
-
-            if (daySchedule.closed) {
-                timeInput.disabled = true;
-                timeInput.value = '';
-                alert('Selected day is not available for booking. Please choose another day.');
-                return;
-            }
-
-            timeInput.disabled = false;
-            timeInput.min = daySchedule.open;
-            timeInput.max = daySchedule.close;
-
-            // Update the time input's help text
-            const timeHelpText = timeInput.parentElement.querySelector('small');
-            if (timeHelpText) {
-                timeHelpText.textContent = `Business hours: ${convertEDTtoLocal(daySchedule.open)} - ${convertEDTtoLocal(daySchedule.close)}`;
-            }
-        });
-    }
-
-    // Initialize everything
+    // Initialize all business hours page elements
     function initializeAll() {
         updateTimeDisplay();
         updateTimezone();
@@ -299,7 +181,192 @@ document.addEventListener('DOMContentLoaded', function() {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
-    // Check if user is admin and add admin link if true
+    // Booking Modal Setup
+    function setupBookingModal() {
+        const bookingModal = document.getElementById('bookingModal');
+        const bookingButton = document.getElementById('bookingButton');
+        const closeModalButton = document.querySelector('.modal-close');
+        const bookingForm = document.getElementById('bookingForm');
+
+        if (bookingButton) {
+            bookingButton.addEventListener('click', () => {
+                initializeBookingForm();
+                bookingModal.style.display = 'block';
+            });
+        }
+
+        if (closeModalButton) {
+            closeModalButton.addEventListener('click', () => {
+                bookingModal.style.display = 'none';
+            });
+        }
+
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', handleBookingSubmission);
+        }
+
+        window.addEventListener('click', (event) => {
+            if (event.target === bookingModal) {
+                bookingModal.style.display = 'none';
+            }
+        });
+    }
+
+    function initializeBookingForm() {
+        const now = new Date(CURRENT_TIMESTAMP);
+        const minDate = new Date(now);
+        minDate.setDate(minDate.getDate() + 1);
+
+        const maxDate = new Date(now);
+        maxDate.setDate(maxDate.getDate() + 30);
+
+        const dateInput = document.getElementById('date');
+        if (dateInput) {
+            dateInput.min = minDate.toISOString().split('T')[0];
+            dateInput.max = maxDate.toISOString().split('T')[0];
+            
+            // Set up date change handler
+            dateInput.addEventListener('change', handleDateChange);
+        }
+
+        document.getElementById('submissionTime').value = CURRENT_TIMESTAMP;
+        document.getElementById('submittedBy').value = CURRENT_USER;
+    }
+
+    function handleDateChange(event) {
+        const selectedDate = new Date(event.target.value);
+        const dayOfWeek = selectedDate.getDay();
+        const daySchedule = businessHours[DAYS[dayOfWeek]];
+        const timeInput = document.getElementById('time');
+
+        if (!timeInput) return;
+
+        if (daySchedule.closed) {
+            timeInput.disabled = true;
+            timeInput.value = '';
+            alert('Selected day is not available for booking. Please choose another day.');
+            return;
+        }
+
+        timeInput.disabled = false;
+        timeInput.min = daySchedule.open;
+        timeInput.max = daySchedule.close;
+
+        const timeHelpText = timeInput.parentElement.querySelector('small');
+        if (timeHelpText) {
+            timeHelpText.textContent = `Business hours: ${convertEDTtoLocal(daySchedule.open)} - ${convertEDTtoLocal(daySchedule.close)}`;
+        }
+    }
+
+    function handleBookingSubmission(event) {
+        event.preventDefault();
+
+        const formData = {
+            id: Date.now(),
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            date: document.getElementById('date').value,
+            time: document.getElementById('time').value,
+            service: document.getElementById('service').value,
+            notes: document.getElementById('notes').value.trim(),
+            consent: document.getElementById('consent').checked,
+            status: 'pending',
+            submittedBy: CURRENT_USER,
+            submissionTime: new Date(CURRENT_TIMESTAMP).toISOString()
+        };
+
+        if (!validateBookingForm(formData)) return;
+
+        saveBooking(formData);
+        
+        event.target.reset();
+        document.getElementById('bookingModal').style.display = 'none';
+        alert('Thank you! Your booking request has been submitted and is pending approval.');
+    }
+
+    function validateBookingForm(formData) {
+        if (!formData.consent) {
+            alert('Please agree to the terms and conditions.');
+            return false;
+        }
+
+        if (!formData.service) {
+            alert('Please select a service type.');
+            return false;
+        }
+
+        const selectedDay = new Date(formData.date).getDay();
+        const daySchedule = businessHours[DAYS[selectedDay]];
+
+        if (daySchedule.closed) {
+            alert('Selected day is not available for booking. Please choose another day.');
+            return false;
+        }
+
+        const [selectedHour, selectedMinute] = formData.time.split(':').map(Number);
+        const [openHour, openMinute] = daySchedule.open.split(':').map(Number);
+        const [closeHour, closeMinute] = daySchedule.close.split(':').map(Number);
+
+        const selectedMinutes = (selectedHour * 60) + selectedMinute;
+        const openMinutes = (openHour * 60) + openMinute;
+        const closeMinutes = (closeHour * 60) + closeMinute;
+
+        if (selectedMinutes < openMinutes || selectedMinutes >= closeMinutes) {
+            alert('Selected time is outside of business hours. Please choose a time between ' +
+                  convertEDTtoLocal(daySchedule.open) + ' and ' + convertEDTtoLocal(daySchedule.close));
+            return false;
+        }
+
+        return true;
+    }
+
+    function saveBooking(formData) {
+        const bookings = JSON.parse(localStorage.getItem('bookingResponses') || '[]');
+        bookings.push(formData);
+        localStorage.setItem('bookingResponses', JSON.stringify(bookings));
+    }
+
+    // Admin functionality
+    function loadBusinessHoursForm() {
+        const hours = getBusinessHours();
+        DAYS.forEach(day => {
+            const dayData = hours[day];
+            const openCheckbox = document.querySelector(`[name="${day}-open"]`);
+            const startInput = document.querySelector(`[name="${day}-start"]`);
+            const endInput = document.querySelector(`[name="${day}-end"]`);
+            
+            if (openCheckbox && startInput && endInput) {
+                openCheckbox.checked = !dayData.closed;
+                startInput.value = dayData.open || '09:00';
+                endInput.value = dayData.close || '17:00';
+                startInput.disabled = dayData.closed;
+                endInput.disabled = dayData.closed;
+            }
+        });
+    }
+
+    function saveBusinessHours(event) {
+        event.preventDefault();
+        const newHours = {};
+        
+        DAYS.forEach(day => {
+            const openCheckbox = document.querySelector(`[name="${day}-open"]`);
+            const startInput = document.querySelector(`[name="${day}-start"]`);
+            const endInput = document.querySelector(`[name="${day}-end"]`);
+            
+            newHours[day] = {
+                closed: !openCheckbox.checked,
+                open: startInput.value,
+                close: endInput.value
+            };
+        });
+
+        localStorage.setItem('businessHours', JSON.stringify(newHours));
+        showNotification('Business hours saved successfully!');
+    }
+
+    // Admin check and link
     if (localStorage.getItem('isAdmin') === 'true') {
         const nav = document.querySelector('.desktop-menu');
         if (nav) {
@@ -308,10 +375,4 @@ document.addEventListener('DOMContentLoaded', function() {
             nav.appendChild(adminLink);
         }
     }
-
-    // Initial load
-    initializeAll();
-    
-    // Update every minute
-    setInterval(initializeAll, 60000);
 });
