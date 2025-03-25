@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Constants with exact timestamp from your system
-    const CURRENT_TIMESTAMP = '2025-03-25 20:53:31';
+    const CURRENT_TIMESTAMP = '2025-03-25 20:58:44';
     
-    // Business hours in 24-hour format
+    // Business hours in EDT
     const businessHours = {
         sunday: { closed: true },
         monday: { open: '09:00', close: '17:00', closed: false },
@@ -15,37 +14,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
+    // Function to convert EDT time to user's local time
+    function convertEDTtoLocal(timeStr) {
+        if (!timeStr) return '';
+        
+        // Create a date object in EDT
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const edtDate = new Date(CURRENT_TIMESTAMP);
+        edtDate.setHours(hours, minutes, 0);
+
+        // Convert to local time
+        const localDate = new Date(edtDate);
+        
+        // Format in local time
+        return localDate.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+    }
+
     function isBusinessOpen() {
         const now = new Date(CURRENT_TIMESTAMP);
-        
-        // Get day of week and convert UTC to EST (UTC-4)
-        const currentDay = DAYS[now.getUTCDay()];
-        const currentHour = (now.getUTCHours() - 4 + 24) % 24; // Convert to EST
-        const currentMinute = now.getUTCMinutes();
-        
+        const currentDay = DAYS[now.getDay()];
         const daySchedule = businessHours[currentDay];
 
-        // If it's a closed day, return false
-        if (daySchedule.closed) {
-            return false;
-        }
+        if (daySchedule.closed) return false;
 
-        // Convert current time and business hours to minutes for comparison
-        const currentTimeInMinutes = (currentHour * 60) + currentMinute;
-        const [openHour, openMinute] = daySchedule.open.split(':').map(Number);
-        const [closeHour, closeMinute] = daySchedule.close.split(':').map(Number);
-        
-        const openTimeInMinutes = (openHour * 60) + openMinute;
-        const closeTimeInMinutes = (closeHour * 60) + closeMinute;
+        // Get current local time
+        const currentTime = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+
+        // Convert business hours to local time
+        const localOpenTime = convertEDTtoLocal(daySchedule.open);
+        const localCloseTime = convertEDTtoLocal(daySchedule.close);
 
         // Debug logging
-        console.log('Current EST time:', currentHour + ':' + currentMinute);
-        console.log('Current day:', currentDay);
-        console.log('Current minutes since midnight:', currentTimeInMinutes);
-        console.log('Opening minutes:', openTimeInMinutes);
-        console.log('Closing minutes:', closeTimeInMinutes);
+        console.log('Current local time:', currentTime);
+        console.log('Local opening time:', localOpenTime);
+        console.log('Local closing time:', localCloseTime);
 
-        return currentTimeInMinutes >= openTimeInMinutes && currentTimeInMinutes < closeTimeInMinutes;
+        return currentTime >= localOpenTime && currentTime < localCloseTime;
     }
 
     function updateBusinessStatus() {
@@ -57,15 +69,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const open = isBusinessOpen();
 
-        // Update status indicator and text
         indicator.className = `status-indicator ${open ? 'open' : 'closed'}`;
         statusText.textContent = open ? 'OPEN' : 'CLOSED';
 
-        // Update next change text
         if (open) {
-            const now = new Date(CURRENT_TIMESTAMP);
-            const currentDay = DAYS[now.getUTCDay()];
-            nextChange.textContent = `Closes at ${formatTime(businessHours[currentDay].close)}`;
+            const currentDay = DAYS[new Date(CURRENT_TIMESTAMP).getDay()];
+            nextChange.textContent = `Closes at ${convertEDTtoLocal(businessHours[currentDay].close)}`;
         } else {
             nextChange.textContent = `Opens ${getNextOpeningTime()}`;
         }
@@ -75,8 +84,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const timeElement = document.getElementById('currentTime');
         if (timeElement) {
             const now = new Date(CURRENT_TIMESTAMP);
-            // Adjust for EST (UTC-4)
-            now.setHours(now.getUTCHours() - 4);
             timeElement.textContent = now.toLocaleString('en-US', {
                 year: 'numeric',
                 month: '2-digit',
@@ -84,8 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
-                hour12: true,
-                timeZone: 'America/New_York'
+                hour12: true
             });
         }
     }
@@ -93,20 +99,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateTimezone() {
         const zoneElement = document.getElementById('userTimeZone');
         if (zoneElement) {
-            zoneElement.textContent = 'America/New_York';
+            zoneElement.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
         }
     }
 
     function getNextOpeningTime() {
         const now = new Date(CURRENT_TIMESTAMP);
-        let checkDay = now.getUTCDay();
+        let checkDay = now.getDay();
         
         for (let i = 1; i <= 7; i++) {
             checkDay = (checkDay + 1) % 7;
             const nextDay = DAYS[checkDay];
             
             if (!businessHours[nextDay].closed) {
-                return `${capitalize(nextDay)} at ${formatTime(businessHours[nextDay].open)}`;
+                return `${capitalize(nextDay)} at ${convertEDTtoLocal(businessHours[nextDay].open)}`;
             }
         }
         return 'soon';
@@ -117,31 +123,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!tableBody) return;
 
         const now = new Date(CURRENT_TIMESTAMP);
-        const currentDay = DAYS[now.getUTCDay()];
+        const currentDay = DAYS[now.getDay()];
 
         const rows = DAYS.map(day => {
             const schedule = businessHours[day];
             const isToday = day === currentDay;
             
+            const hours = schedule.closed ? 'Closed' : 
+                `${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
+            
             return `
                 <tr${isToday ? ' class="today"' : ''}>
                     <td>${capitalize(day)}</td>
-                    <td>${schedule.closed ? 'Closed' : `${formatTime(schedule.open)} - ${formatTime(schedule.close)}`}</td>
+                    <td>${hours}</td>
                 </tr>
             `;
         });
 
         tableBody.innerHTML = rows.join('');
-    }
-
-    function formatTime(timeStr) {
-        if (!timeStr) return '';
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return new Date(2025, 2, 25, hours, minutes).toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true
-        });
     }
 
     function capitalize(str) {
