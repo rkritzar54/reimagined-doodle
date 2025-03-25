@@ -1,5 +1,5 @@
 /* Admin Portal Styles */
-/* Last Updated: 2025-03-25 22:39:57 by rkritzar54 */
+/* Last Updated: 2025-03-25 23:43:21 by rkritzar54 */
 
 :root {
     --primary-color: #002147;
@@ -188,6 +188,77 @@ body {
     margin-top: 0.75rem;
 }
 
+/* Holiday Management Styles - Updated */
+.holiday-item {
+    background-color: white;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: var(--transition);
+}
+
+.holiday-item:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.holiday-main {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.holiday-main input[type="text"],
+.holiday-main input[type="date"] {
+    flex: 1;
+}
+
+.holiday-hours {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    user-select: none;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.time-inputs {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.time-inputs span {
+    color: var(--gray-600);
+    font-size: 0.9rem;
+}
+
+.time-inputs input[type="time"] {
+    width: 120px;
+    padding: 0.5rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius-sm);
+}
+
+.time-inputs input[type="time"]:disabled {
+    background-color: var(--gray-200);
+    cursor: not-allowed;
+}
+
 /* Status Indicators */
 .status-indicator {
     display: inline-flex;
@@ -364,6 +435,9 @@ body {
     height: 32px;
     cursor: pointer;
     transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .remove-service:hover,
@@ -487,6 +561,20 @@ body {
         margin: 1rem;
         max-width: none;
     }
+
+    .holiday-main {
+        flex-direction: column;
+    }
+
+    .holiday-hours {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .time-inputs {
+        width: 100%;
+        margin-top: 1rem;
+    }
 }
 
 /* Print Styles */
@@ -503,5 +591,196 @@ body {
 
     .admin-tab {
         break-inside: avoid;
+    }
+}
+
+@media (max-width: 1024px) {
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hours-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-content {
+        padding: 1.5rem;
+    }
+
+    .holiday-item {
+        padding: 1.25rem;
+    }
+
+    .modal-content {
+        max-width: 90%;
+        margin: 2rem auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-container {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--gray-200);
+        padding: 1rem 0;
+    }
+
+    .admin-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hours-grid,
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bookings-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .filter-controls {
+        width: 100%;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .modal-content {
+        margin: 1rem;
+        max-width: none;
+    }
+
+    .holiday-main {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .holiday-hours {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .time-inputs {
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .setting-group {
+        padding: 1.25rem;
+    }
+
+    .admin-header-content {
+        padding: 0 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-content {
+        padding: 0.75rem;
+    }
+
+    .dashboard-card {
+        padding: 1.25rem;
+    }
+
+    .card-number {
+        font-size: 2rem;
+    }
+
+    .status-indicator {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
+    .holiday-item {
+        padding: 1rem;
+    }
+
+    .time-inputs input[type="time"] {
+        width: 100%;
+    }
+
+    .time-inputs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .time-inputs span {
+        align-self: center;
+    }
+
+    .modal-content {
+        padding: 1.25rem;
+        margin: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .save-button,
+    .add-button {
+        width: 100%;
+        padding: 0.75rem;
+    }
+
+    .activity-item {
+        padding: 0.75rem;
+    }
+
+    .activity-header {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .social-media-item .input-with-icon {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .remove-service,
+    .remove-social,
+    .remove-holiday {
+        width: 28px;
+        height: 28px;
+    }
+
+    .admin-header {
+        padding: 0.75rem 0;
+    }
+
+    .admin-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .admin-user {
+        gap: 1rem;
     }
 }
