@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Portal</title>
+    <!-- Add Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="admin-styles.css">
 </head>
 <body>
@@ -99,12 +101,47 @@
                                     <input type="checkbox" name="monday-open" checked>
                                     Open
                                 </label>
-                                <input type="time" name="monday-start" value="09:00">
+                                <input type="time" name="monday-start" value="10:00">
                                 <span>to</span>
-                                <input type="time" name="monday-end" value="17:00">
+                                <input type="time" name="monday-end" value="23:00">
                             </div>
                         </div>
-                        <!-- Repeat for other days -->
+                        <div class="day-settings">
+                            <h3>Tuesday</h3>
+                            <div class="time-inputs">
+                                <label>
+                                    <input type="checkbox" name="tuesday-open" checked>
+                                    Open
+                                </label>
+                                <input type="time" name="tuesday-start" value="10:00">
+                                <span>to</span>
+                                <input type="time" name="tuesday-end" value="23:00">
+                            </div>
+                        </div>
+                        <div class="day-settings">
+                            <h3>Wednesday</h3>
+                            <div class="time-inputs">
+                                <label>
+                                    <input type="checkbox" name="wednesday-open" checked>
+                                    Open
+                                </label>
+                                <input type="time" name="wednesday-start" value="10:00">
+                                <span>to</span>
+                                <input type="time" name="wednesday-end" value="23:00">
+                            </div>
+                        </div>
+                        <div class="day-settings">
+                            <h3>Thursday</h3>
+                            <div class="time-inputs">
+                                <label>
+                                    <input type="checkbox" name="thursday-open" checked>
+                                    Open
+                                </label>
+                                <input type="time" name="thursday-start" value="10:00">
+                                <span>to</span>
+                                <input type="time" name="thursday-end" value="23:00">
+                            </div>
+                        </div>
                         <div class="day-settings">
                             <h3>Friday</h3>
                             <div class="time-inputs">
@@ -112,9 +149,33 @@
                                     <input type="checkbox" name="friday-open" checked>
                                     Open
                                 </label>
-                                <input type="time" name="friday-start" value="09:00">
+                                <input type="time" name="friday-start" value="10:00">
                                 <span>to</span>
-                                <input type="time" name="friday-end" value="16:00">
+                                <input type="time" name="friday-end" value="23:00">
+                            </div>
+                        </div>
+                        <div class="day-settings">
+                            <h3>Saturday</h3>
+                            <div class="time-inputs">
+                                <label>
+                                    <input type="checkbox" name="saturday-open" checked>
+                                    Open
+                                </label>
+                                <input type="time" name="saturday-start" value="10:00">
+                                <span>to</span>
+                                <input type="time" name="saturday-end" value="23:00">
+                            </div>
+                        </div>
+                        <div class="day-settings">
+                            <h3>Sunday</h3>
+                            <div class="time-inputs">
+                                <label>
+                                    <input type="checkbox" name="sunday-open">
+                                    Open
+                                </label>
+                                <input type="time" name="sunday-start" value="10:00" disabled>
+                                <span>to</span>
+                                <input type="time" name="sunday-end" value="23:00" disabled>
                             </div>
                         </div>
                     </div>
@@ -131,7 +192,7 @@
                             <h3>Business Information</h3>
                             <div class="form-group">
                                 <label>Business Name</label>
-                                <input type="text" name="businessName" value="Your Business">
+                                <input type="text" name="businessName" value="River's Portfolio">
                             </div>
                             <div class="form-group">
                                 <label>Contact Email</label>
@@ -160,5 +221,8 @@
             </section>
         </main>
     </div>
+
+    <!-- Add JavaScript -->
+    <script src="admin.js"></script>
 </body>
 </html>
