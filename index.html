@@ -46,6 +46,16 @@
     </nav>
 </header>
 
+    <script>
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.querySelector('nav ul.mobile-menu');
+
+    hamburger.addEventListener('click', () => {
+        mobileMenu.classList.toggle('active');
+    });
+</script>
+
+
     <!-- Banner -->
     <div class="banner">
         <img src="banner.jpg" alt="Banner Image">
