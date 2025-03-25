@@ -34,6 +34,11 @@ header {
     margin-right: 10px;
 }
 
+h1 {
+    color: #002147;
+    font-size: 1.8rem;
+}
+
 nav ul {
     list-style: none;
     display: flex;
@@ -85,37 +90,19 @@ nav ul li:hover .dropdown-menu {
     width: 48%;
 }
 
-/* Space adjustments in right column */
-.right {
-    padding-left: 2rem;
-    background-color: #f7f7f7;
-    border-radius: 8px;
-}
-
-.right > * {
-    margin-bottom: 1.5rem; /* Add space between each item in the right column */
-}
-
-.right h2 {
-    margin-bottom: 1.5rem; /* Ensure the title has space at the bottom */
-}
-
-/* Section Titles */
-h2 {
-    color: #002147;
-    font-size: 1.5rem;
+/* Right Column: Add spacing */
+.right h2, .right h3, .right h4, .right p, .right ul {
     margin-bottom: 1rem;
 }
 
 /* Quick Links */
-.quick-links ul {
+.quick-links {
     list-style: none; /* Remove bullets */
-    padding: 0; /* Remove padding around the list */
-    margin: 0; /* Remove margin around the list */
+    padding: 0; /* Remove padding */
 }
 
 .quick-links li {
-    margin-bottom: 10px; /* Add space between the list items */
+    margin-bottom: 10px;
 }
 
 .quick-links a {
@@ -138,56 +125,54 @@ footer {
     background: #002147;
     color: white;
     padding: 2rem 1rem;
-    position: relative;
-    width: 100%;
     text-align: center;
-}
-
-/* Footer Title */
-footer h2 {
-    color: white; /* Ensure the title in the footer is white */
-}
-
-/* Footer Links */
-footer a {
-    color: white; /* Ensure any links in the footer are white */
-}
-
-footer a:hover {
-    color: #aaa; /* Slight hover effect for links */
-}
-
-/* Footer Wrapper */
-.footer-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-}
-
-/* Footer Columns */
-.footer-left, .footer-right {
-    width: 48%;
-}
-
-/* Footer Bottom */
-.footer-bottom {
-    font-size: 0.9rem;
-    color: #aaa;
     margin-top: 2rem;
 }
 
-/* Responsive Layout for Tablets and Smaller Screens */
-@media (max-width: 1024px) {
+.footer-wrapper {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: auto;
+    flex-wrap: wrap;
+    padding-bottom: 1rem;
+}
+
+.footer-left, .footer-right {
+    width: 48%;
+    text-align: left;
+}
+
+.footer-left h2 {
+    color: white; /* Ensure the title is visible */
+    margin-bottom: 10px;
+}
+
+.social-links {
+    margin-top: 10px;
+}
+
+.social-links a {
+    color: white;
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.footer-bottom {
+    width: 100%;
+    background: #001530;
+    padding: 1rem 0;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1024px) {
     .main-container {
         flex-direction: column;
-        gap: 1.5rem;
+        text-align: center;
     }
 
     .left, .right {
-        width: 100%; /* Full width on tablets */
-        padding: 1rem;
+        width: 100%;
     }
 
     .footer-wrapper {
@@ -199,77 +184,29 @@ footer a:hover {
         width: 100%;
         margin-bottom: 1rem;
     }
-
-    .footer-bottom {
-        font-size: 1rem;
-    }
-
-    h2 {
-        font-size: 1.3rem; /* Slightly smaller font size for tablets */
-    }
-
-    .quick-links a {
-        font-size: 1.1rem;
-    }
 }
 
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-    /* Header Adjustments */
+@media screen and (max-width: 768px) {
     header {
         flex-direction: column;
         text-align: center;
     }
 
-    nav ul {
+    .logo-title {
         flex-direction: column;
-        align-items: center;
-    }
-
-    nav ul li {
-        margin: 0;
-        padding: 0.5rem;
-    }
-
-    .main-container {
-        flex-direction: column;
-        gap: 1.5rem;
-        padding: 1rem;
-    }
-
-    .left, .right {
-        width: 100%; /* Full width on mobile */
-        padding: 1rem;
-    }
-
-    .footer-wrapper {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .footer-left, .footer-right {
-        width: 100%;
-        margin-bottom: 1rem;
-    }
-
-    .footer-bottom {
-        font-size: 1rem;
-    }
-
-    h2 {
-        font-size: 1.2rem; /* Slightly smaller font size for mobile */
-    }
-
-    .quick-links a {
-        font-size: 1.1rem;
     }
 
     .logo {
-        width: 30px;
-        height: 30px; /* Smaller logo on mobile */
+        margin-bottom: 10px;
     }
 
-    .logo-title {
-        font-size: 1.2rem; /* Adjust logo/title size on mobile */
+    nav ul {
+        flex-direction: column;
+        padding-top: 10px;
+    }
+
+    nav ul li {
+        margin-left: 0;
+        margin-bottom: 10px;
     }
 }
