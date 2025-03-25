@@ -1,5 +1,5 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-25 22:29:10';
+const CURRENT_TIMESTAMP = '2025-03-25 22:55:50';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -132,9 +132,9 @@ function saveBusinessHours(e) {
     
     days.forEach(day => {
         hours[day] = {
-            open: this.querySelector(`[name="${day}-open"]`).checked,
-            start: this.querySelector(`[name="${day}-start"]`).value,
-            end: this.querySelector(`[name="${day}-end"]`).value
+            open: this.querySelector(`[name="${day}-start"]`).value,
+            close: this.querySelector(`[name="${day}-end"]`).value,
+            closed: !this.querySelector(`[name="${day}-open"]`).checked
         };
     });
 
@@ -154,11 +154,11 @@ function loadBusinessHours() {
         const endInput = document.querySelector(`[name="${day}-end"]`);
         
         if (openCheckbox && startInput && endInput) {
-            openCheckbox.checked = dayData.open;
-            startInput.value = dayData.start;
-            endInput.value = dayData.end;
-            startInput.disabled = !dayData.open;
-            endInput.disabled = !dayData.open;
+            openCheckbox.checked = !dayData.closed;
+            startInput.value = dayData.open || '09:00';
+            endInput.value = dayData.close || '17:00';
+            startInput.disabled = dayData.closed;
+            endInput.disabled = dayData.closed;
         }
     });
 }
@@ -204,9 +204,7 @@ function loadSettings() {
     // Load social media, holidays, and services
     loadSocialMedia(settings.socialMedia);
     loadHolidays(settings.holidays);
-    document.querySelector('[name="minNotice"]').value = settings.bookingSettings.minNotice;
-    document.querySelector('[name="maxFuture"]').value = settings.bookingSettings.maxFuture;
-    loadServices(settings.bookingSettings.services);
+    loadBookingSettings(settings.bookingSettings);
 }
 
 // Social Media Management
@@ -334,7 +332,7 @@ function loadRecentActivity() {
     `).join('');
 }
 
-// Bookings Management
+// Booking Management
 function loadBookings() {
     const bookingsList = document.getElementById('bookingsList');
     const bookings = getAllBookings();
@@ -443,14 +441,14 @@ function addActivity(description) {
     loadRecentActivity();
 }
 
-// Default Data Functions
+// Get default data
 function getDefaultSettings() {
     return {
         businessInfo: {
             name: "River's Portfolio",
-            contactEmail: "",
+            contactEmail: "contact@example.com",
             emergencyPhone: "555-123-4567",
-            contactPhone: "123-456-7890",
+            contactPhone: "567-436-8082",
             businessDescription: "",
             location: "Hidden",
             missionStatement: "To provide accessible and clean design for all."
@@ -472,19 +470,21 @@ function getDefaultSettings() {
 
 function getDefaultBusinessHours() {
     return {
-        monday: { open: true, start: "09:00", end: "17:00" },
-        tuesday: { open: true, start: "09:00", end: "17:00" },
-        wednesday: { open: true, start: "09:00", end: "17:00" },
-        thursday: { open: true, start: "09:00", end: "17:00" },
-        friday: { open: true, start: "09:00", end: "16:00" },
-        saturday: { open: false, start: "09:00", end: "17:00" },
-        sunday: { open: false, start: "09:00", end: "17:00" }
+        monday: { open: '09:00', close: '17:00', closed: false },
+        tuesday: { open: '09:00', close: '17:00', closed: false },
+        wednesday: { open: '09:00', close: '17:00', closed: false },
+        thursday: { open: '09:00', close: '17:00', closed: false },
+        friday: { open: '09:00', close: '16:00', closed: false },
+        saturday: { open: '09:00', close: '17:00', closed: true },
+        sunday: { open: '09:00', close: '17:00', closed: true }
     };
 }
 
 // Booking Helper Functions
 function getTodayBookings() {
-    return JSON.parse(localStorage.getItem('bookings')) || [];
+    const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+    const today = new Date(CURRENT_TIMESTAMP).toISOString().split('T')[0];
+    return bookings.filter(booking => booking.date === today);
 }
 
 function getPendingBookings() {
@@ -503,15 +503,18 @@ function getRecentActivities() {
 function checkBusinessStatus() {
     const hours = JSON.parse(localStorage.getItem('businessHours')) || getDefaultBusinessHours();
     const now = new Date(CURRENT_TIMESTAMP);
-    const day = now.toLocaleLowerCase().slice(0, 3);
+    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
     
-    if (!hours[day].open) return false;
+    if (hours[day].closed) return false;
     
     const currentTime = now.getHours() * 100 + now.getMinutes();
-    const startTime = parseInt(hours[day].start.replace(':', ''));
-    const endTime = parseInt(hours[day].end.replace(':', ''));
+    const [openHour, openMinute] = hours[day].open.split(':').map(Number);
+    const [closeHour, closeMinute] = hours[day].close.split(':').map(Number);
     
-    return currentTime >= startTime && currentTime <= endTime;
+    const openTime = openHour * 100 + openMinute;
+    const closeTime = closeHour * 100 + closeMinute;
+    
+    return currentTime >= openTime && currentTime < closeTime;
 }
 
 function updateBookingStatus(bookingId, status) {
@@ -523,5 +526,6 @@ function updateBookingStatus(bookingId, status) {
         addActivity(`Booking ${bookingId} ${status}`);
         loadBookings();
         updateDashboardStats();
+        showNotification(`Booking ${status} successfully`);
     }
 }
