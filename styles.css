@@ -272,3 +272,44 @@ footer .footer-right p {
 nav ul.mobile-menu.active {
     display: flex;
 }
+
+/* Add these styles to your existing styles.css */
+.full-width {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.business-hours table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.business-hours th,
+.business-hours td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.business-hours th {
+    background-color: #002147;
+    color: white;
+}
+
+.about-content {
+    line-height: 1.6;
+}
+
+.about-content h3 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+.about-content ul {
+    list-style-type: disc;
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
