@@ -1,5 +1,5 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-25 23:06:34';
+const CURRENT_TIMESTAMP = '2025-03-25 23:37:52';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -290,24 +290,57 @@ function setupHolidayManagement() {
     if (addButton) {
         addButton.addEventListener('click', () => {
             const holidayCount = document.querySelectorAll('.holiday-item').length + 1;
-            addHolidayItem('', '', holidayCount);
+            addHolidayItem({}, holidayCount);
         });
     }
 }
 
-function addHolidayItem(name, date, index) {
+function addHolidayItem(holiday = {}, index) {
     const holidayList = document.getElementById('holidayList');
     if (!holidayList) return;
 
     const item = document.createElement('div');
     item.className = 'holiday-item';
     item.innerHTML = `
-        <input type="text" name="holiday-name-${index}" value="${name}" placeholder="Holiday Name">
-        <input type="date" name="holiday-date-${index}" value="${date}">
+        <div class="holiday-main">
+            <input type="text" name="holiday-name-${index}" 
+                value="${holiday.name || ''}" placeholder="Holiday Name" required>
+            <input type="date" name="holiday-date-${index}" 
+                value="${holiday.date || ''}" required>
+        </div>
+        <div class="holiday-hours">
+            <label class="checkbox-label">
+                <input type="checkbox" name="holiday-closed-${index}" 
+                    ${holiday.closed ? 'checked' : ''}>
+                Closed
+            </label>
+            <div class="time-inputs" ${holiday.closed ? 'style="display: none;"' : ''}>
+                <input type="time" name="holiday-open-${index}" 
+                    value="${holiday.open || '09:00'}" 
+                    ${holiday.closed ? 'disabled' : ''}>
+                <span>to</span>
+                <input type="time" name="holiday-close-${index}" 
+                    value="${holiday.close || '17:00'}" 
+                    ${holiday.closed ? 'disabled' : ''}>
+            </div>
+        </div>
         <button type="button" class="remove-holiday">&times;</button>
     `;
 
     holidayList.appendChild(item);
+
+    // Setup event listeners
+    const closedCheckbox = item.querySelector(`[name="holiday-closed-${index}"]`);
+    const timeInputs = item.querySelector('.time-inputs');
+    const openInput = item.querySelector(`[name="holiday-open-${index}"]`);
+    const closeInput = item.querySelector(`[name="holiday-close-${index}"]`);
+
+    closedCheckbox.addEventListener('change', function() {
+        timeInputs.style.display = this.checked ? 'none' : 'flex';
+        openInput.disabled = this.checked;
+        closeInput.disabled = this.checked;
+    });
+
     item.querySelector('.remove-holiday').addEventListener('click', () => item.remove());
 }
 
@@ -442,10 +475,34 @@ function getDefaultSettings() {
         },
         socialMedia: [],
         holidays: [
-            { name: "New Year's Day", date: "2025-01-01" },
-            { name: "Independence Day", date: "2025-07-04" },
-            { name: "Thanksgiving", date: "2025-11-28" },
-            { name: "Christmas", date: "2025-12-25" }
+            { 
+                name: "New Year's Day", 
+                date: "2025-01-01",
+                closed: true,
+                open: "",
+                close: ""
+            },
+            { 
+                name: "Independence Day", 
+                date: "2025-07-04",
+                closed: true,
+                open: "",
+                close: ""
+            },
+            { 
+                name: "Thanksgiving", 
+                date: "2025-11-28",
+                closed: true,
+                open: "",
+                close: ""
+            },
+            { 
+                name: "Christmas", 
+                date: "2025-12-25",
+                closed: true,
+                open: "",
+                close: ""
+            }
         ],
         bookingSettings: {
             minNotice: 24,
@@ -467,7 +524,10 @@ function getHolidayData() {
     const items = document.querySelectorAll('.holiday-item');
     return Array.from(items).map(item => ({
         name: item.querySelector('input[type="text"]').value,
-        date: item.querySelector('input[type="date"]').value
+        date: item.querySelector('input[type="date"]').value,
+        closed: item.querySelector('input[type="checkbox"]').checked,
+        open: item.querySelector('input[name^="holiday-open"]').value,
+        close: item.querySelector('input[name^="holiday-close"]').value
     }));
 }
 
@@ -489,7 +549,7 @@ function loadHolidays(holidays = []) {
     if (!list) return;
 
     list.innerHTML = '';
-    holidays.forEach((holiday, index) => addHolidayItem(holiday.name, holiday.date, index + 1));
+    holidays.forEach((holiday, index) => addHolidayItem(holiday, index + 1));
 }
 
 function showNotification(message, type = 'success') {
@@ -578,13 +638,34 @@ function getPendingBookings() {
 function checkBusinessStatus() {
     const hours = JSON.parse(localStorage.getItem('businessHours')) || getDefaultBusinessHours();
     const now = new Date(CURRENT_TIMESTAMP);
-    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+    const today = now.toISOString().split('T')[0];
     
-    if (hours[day].closed) return false;
+    // Check if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holiday = settings.holidays.find(h => h.date === today);
+    
+    if (holiday) {
+        if (holiday.closed) return false;
+        
+        const currentTime = now.getHours() * 100 + now.getMinutes();
+        const [openHour, openMin] = holiday.open.split(':').map(Number);
+        const [closeHour, closeMin] = holiday.close.split(':').map(Number);
+        
+        const openTime = openHour * 100 + openMin;
+        const closeTime = closeHour * 100 + closeMin;
+        
+        return currentTime >= openTime && currentTime < closeTime;
+    }
+
+    // Regular business hours check
+    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+    const schedule = hours[day];
+    
+    if (schedule.closed) return false;
     
     const currentTime = now.getHours() * 100 + now.getMinutes();
-    const [openHour, openMinute] = hours[day].open.split(':').map(Number);
-    const [closeHour, closeMinute] = hours[day].close.split(':').map(Number);
+    const [openHour, openMinute] = schedule.open.split(':').map(Number);
+    const [closeHour, closeMinute] = schedule.close.split(':').map(Number);
     
     const openTime = openHour * 100 + openMinute;
     const closeTime = closeHour * 100 + closeMinute;
