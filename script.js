@@ -1,8 +1,7 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Constants
-    const CURRENT_TIMESTAMP = '2025-03-25 20:02:33';
-    
-    // Business hours definition (in 24-hour format)
+document.addEventListener('DOMContentLoaded', function () {
+    // Use dynamic timestamp
+    const CURRENT_TIMESTAMP = new Date();
+
     const businessHours = {
         monday: { open: '09:00', close: '17:00', closed: false },
         tuesday: { open: '09:00', close: '17:00', closed: false },
@@ -13,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
         sunday: { closed: true }
     };
 
-    // Days mapping
     const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
     function updateDateTime() {
@@ -48,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hoursTable.innerHTML = DAYS.map((day, index) => {
             const dayInfo = businessHours[day];
             const isToday = index === todayIndex;
-            
+
             return `
                 <tr${isToday ? ' class="today"' : ''}>
                     <td>${day.charAt(0).toUpperCase() + day.slice(1)}</td>
@@ -141,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update every minute
     setInterval(init, 60000);
+});
 
     // Booking system functionality
     const bookingButton = document.getElementById('bookingButton');
