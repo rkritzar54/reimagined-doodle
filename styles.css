@@ -90,36 +90,46 @@ nav ul li .dropdown-menu li a:hover {
     color: white;
 }
 
-/* Hamburger Menu */
-.hamburger {
+/* Hamburger Menu Styles */
+#hamburger {
     display: none;
-    flex-direction: column;
     cursor: pointer;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-.hamburger span {
-    height: 3px;
+#hamburger div {
     width: 25px;
+    height: 3px;
     background-color: #002147;
-    margin: 4px;
-    transition: all 0.3s ease;
+    margin: 4px 0;
+    transition: 0.4s;
 }
 
 nav ul.mobile-menu {
     display: none;
     flex-direction: column;
+    background-color: #fff;
     position: absolute;
-    top: 70px;
-    right: 20px;
-    background-color: white;
-    border: 1px solid #ddd;
-    width: 200px;
-    z-index: 1000;
+    top: 70px; /* Adjust depending on your header height */
+    left: 0;
+    width: 100%;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-nav ul.mobile-menu li {
-    text-align: left;
-    margin: 10px 0;
+nav ul.mobile-menu.active {
+    display: flex;
+}
+
+nav ul li a {
+    padding: 1rem;
+    text-decoration: none;
+    color: #002147;
+}
+
+nav ul li a:hover {
+    background-color: #f4f4f4;
 }
 
 /* Banner */
