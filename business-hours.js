@@ -1,5 +1,5 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-25 22:58:44';
+const CURRENT_TIMESTAMP = '2025-03-25 23:20:54';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -8,6 +8,13 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeBookingSystem();
     updatePublicDisplay();
     setupEventListeners();
+
+    // Listen for storage changes (admin updates)
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'businessSettings' || e.key === 'businessHours') {
+            updatePublicDisplay();
+        }
+    });
 
     // Update every minute
     setInterval(updatePublicDisplay, 60000);
@@ -37,56 +44,83 @@ function getBusinessHours() {
 
 function updatePublicDisplay() {
     const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const hours = getBusinessHours();
+    
     updateTimeDisplay();
     updateContactInfo(settings);
     updateFooter(settings);
     updateHolidayList(settings);
-    updateBusinessStatus(getBusinessHours());
+    updateBusinessTable(hours);
+    updateBusinessStatus(hours);
 }
 
 function updateTimeDisplay() {
     const timeElement = document.getElementById('currentTime');
+    const zoneElement = document.getElementById('userTimeZone');
+    
     if (timeElement) {
         timeElement.textContent = new Date(CURRENT_TIMESTAMP).toLocaleString();
     }
-
-    const zoneElement = document.getElementById('userTimeZone');
     if (zoneElement) {
         zoneElement.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 }
 
 function updateContactInfo(settings) {
-    const elements = {
-        email: document.querySelector('.contact-email'),
-        phone: document.querySelector('.contact-phone'),
-        emergency: document.querySelector('.emergency-contact'),
-        location: document.querySelector('.contact-location')
-    };
-
-    if (elements.email) elements.email.textContent = settings.businessInfo.contactEmail;
-    if (elements.phone) elements.phone.textContent = settings.businessInfo.contactPhone;
-    if (elements.emergency) elements.emergency.textContent = settings.businessInfo.emergencyPhone;
-    if (elements.location) elements.location.textContent = settings.businessInfo.location;
+    const contactInfo = document.getElementById('contactInfo');
+    if (contactInfo) {
+        contactInfo.innerHTML = `
+            <p class="contact-email">Email: ${settings.businessInfo.contactEmail}</p>
+            <p class="contact-phone">Phone: ${settings.businessInfo.contactPhone}</p>
+            <p class="emergency-contact">Emergency: ${settings.businessInfo.emergencyPhone}</p>
+            <p class="contact-location">Location: ${settings.businessInfo.location}</p>
+        `;
+    }
 }
 
 function updateFooter(settings) {
-    const elements = {
-        name: document.querySelector('.footer-business-name'),
-        description: document.querySelector('.footer-description'),
-        mission: document.querySelector('.footer-mission'),
-        contact: document.querySelector('.footer-contact')
-    };
+    // Update business name
+    const footerBusinessName = document.getElementById('footerBusinessName');
+    if (footerBusinessName) {
+        footerBusinessName.textContent = settings.businessInfo.name;
+    }
 
-    if (elements.name) elements.name.textContent = settings.businessInfo.name;
-    if (elements.description) elements.description.textContent = settings.businessInfo.businessDescription;
-    if (elements.mission) elements.mission.textContent = settings.businessInfo.missionStatement;
-    if (elements.contact) {
-        elements.contact.innerHTML = `
-            <p>Contact: ${settings.businessInfo.contactPhone}</p>
+    // Update contact info
+    const footerContactInfo = document.getElementById('footerContactInfo');
+    if (footerContactInfo) {
+        footerContactInfo.innerHTML = `
+            <p>Address: ${settings.businessInfo.location}</p>
+            <p>Phone: ${settings.businessInfo.contactPhone}</p>
             <p>Email: ${settings.businessInfo.contactEmail}</p>
-            <p>Location: ${settings.businessInfo.location}</p>
         `;
+    }
+
+    // Update social links
+    const footerSocialLinks = document.getElementById('footerSocialLinks');
+    if (footerSocialLinks) {
+        const socialLinksHTML = settings.socialMedia.map(social => `
+            <a href="${social.url}" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-${social.platform.toLowerCase()}"></i>
+                ${social.platform}
+            </a>
+        `).join('');
+        footerSocialLinks.innerHTML = socialLinksHTML;
+    }
+
+    // Update mission info
+    const footerMissionInfo = document.getElementById('footerMissionInfo');
+    if (footerMissionInfo) {
+        footerMissionInfo.innerHTML = `
+            <p><strong>Mission Statement:</strong></p>
+            <p>${settings.businessInfo.missionStatement}</p>
+            <p class="footer-description">${settings.businessInfo.businessDescription}</p>
+        `;
+    }
+
+    // Update business owner
+    const footerBusinessOwner = document.getElementById('footerBusinessOwner');
+    if (footerBusinessOwner) {
+        footerBusinessOwner.textContent = settings.businessInfo.name;
     }
 }
 
@@ -115,13 +149,13 @@ function updateBusinessTable(hours) {
         const schedule = hours[day];
         const isToday = index === currentDay;
         
-        const hours = schedule.closed ? 'Closed' : 
+        const displayHours = schedule.closed ? 'Closed' : 
             `${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
         
         return `
             <tr${isToday ? ' class="today"' : ''}>
                 <td>${capitalize(day)}</td>
-                <td>${hours}</td>
+                <td>${displayHours}</td>
             </tr>
         `;
     });
@@ -130,15 +164,24 @@ function updateBusinessTable(hours) {
 }
 
 function updateBusinessStatus(hours) {
-    const statusElement = document.getElementById('businessStatus');
-    if (!statusElement) return;
+    const statusText = document.getElementById('openClosedText');
+    const statusIndicator = document.getElementById('currentStatus');
+    const nextChangeElement = document.getElementById('nextChange');
+    
+    if (!statusText || !statusIndicator) return;
 
     const isOpen = checkIfOpen(hours);
-    statusElement.className = `status-indicator ${isOpen ? 'open' : 'closed'}`;
-    statusElement.innerHTML = `
-        <span class="status-text">${isOpen ? 'OPEN' : 'CLOSED'}</span>
-        <span class="next-change">${getNextChangeTime(hours, isOpen)}</span>
-    `;
+    
+    // Update indicator
+    statusIndicator.className = `status-indicator ${isOpen ? 'open' : 'closed'}`;
+    
+    // Update text
+    statusText.textContent = isOpen ? 'OPEN' : 'CLOSED';
+    
+    // Update next change time
+    if (nextChangeElement) {
+        nextChangeElement.textContent = getNextChangeTime(hours, isOpen);
+    }
 }
 
 function checkIfOpen(hours) {
