@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const CURRENT_TIMESTAMP = '2025-03-25 21:01:27';
+    const CURRENT_TIMESTAMP = '2025-03-25 17:05:19';
     
     // Business hours in EDT
     const businessHours = {
