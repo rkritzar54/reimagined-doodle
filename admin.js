@@ -1,299 +1,341 @@
+// Constants
+const CURRENT_TIMESTAMP = '2025-03-25 22:13:48';
+const CURRENT_USER = 'rkritzar54';
+
 document.addEventListener('DOMContentLoaded', function() {
-    const CURRENT_TIMESTAMP = '2025-03-25 21:52:32';
-    const CURRENT_USER = 'rkritzar54';
+    // Update timestamp display
+    document.getElementById('currentTime').textContent = new Date(CURRENT_TIMESTAMP).toLocaleString();
 
-    // Set admin status
-    localStorage.setItem('isAdmin', 'true');
+    // Tab Navigation
+    const tabLinks = document.querySelectorAll('.admin-sidebar li');
+    const tabContents = document.querySelectorAll('.admin-tab');
 
-    // Initialize the admin interface
-    updateDateTime();
-    loadDashboardData();
-    setupEventListeners();
-    loadBusinessHours();
-    loadSettings();
-
-    function updateDateTime() {
-        const timeElement = document.getElementById('currentTime');
-        if (timeElement) {
-            const now = new Date(CURRENT_TIMESTAMP);
-            timeElement.textContent = now.toLocaleString();
-        }
-    }
-
-    function loadDashboardData() {
-        const bookings = JSON.parse(localStorage.getItem('bookingResponses') || '[]');
-        
-        // Update dashboard numbers
-        document.getElementById('totalBookings').textContent = bookings.length;
-        document.getElementById('pendingBookings').textContent = 
-            bookings.filter(b => b.status === 'pending').length;
-        
-        // Count today's bookings
-        const today = new Date(CURRENT_TIMESTAMP).toDateString();
-        document.getElementById('todayBookings').textContent = 
-            bookings.filter(b => new Date(b.submissionTime).toDateString() === today).length;
-
-        // Update business status
-        updateBusinessStatus();
-        updateActivityLog(bookings);
-    }
-
-    function updateActivityLog(bookings) {
-        const activityLog = document.getElementById('activityLog');
-        if (!activityLog) return;
-
-        const recentBookings = bookings
-            .sort((a, b) => new Date(b.submissionTime) - new Date(a.submissionTime))
-            .slice(0, 5);
-
-        const activityHTML = recentBookings.map(booking => `
-            <div class="activity-item">
-                <div class="activity-header">
-                    <span class="activity-type">Booking Request</span>
-                    <span class="activity-time">${formatTimeAgo(booking.submissionTime)}</span>
-                </div>
-                <div class="activity-details">
-                    ${booking.name} - ${booking.date} at ${booking.time}
-                    <span class="status ${booking.status}">${booking.status}</span>
-                </div>
-            </div>
-        `).join('');
-
-        activityLog.innerHTML = activityHTML || '<p>No recent activity</p>';
-    }
-
-    function setupEventListeners() {
-        // Tab switching
-        document.querySelectorAll('.admin-sidebar li').forEach(tab => {
-            tab.addEventListener('click', function() {
-                switchTab(this.dataset.tab);
-            });
-        });
-
-        // Business Hours Form
-        const businessHoursForm = document.getElementById('businessHoursForm');
-        if (businessHoursForm) {
-            businessHoursForm.addEventListener('submit', saveBusinessHours);
+    tabLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const tabId = link.getAttribute('data-tab');
             
-            // Handle checkbox changes
-            businessHoursForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const dayInputs = this.closest('.time-inputs').querySelectorAll('input[type="time"]');
-                    dayInputs.forEach(input => input.disabled = !this.checked);
-                });
-            });
-        }
-
-        // Settings Form
-        const settingsForm = document.getElementById('settingsForm');
-        if (settingsForm) {
-            settingsForm.addEventListener('submit', saveSettings);
-        }
-
-        // Booking filters
-        const searchInput = document.getElementById('searchBookings');
-        const statusFilter = document.getElementById('statusFilter');
-        const dateFilter = document.getElementById('dateFilter');
-
-        if (searchInput) searchInput.addEventListener('input', filterBookings);
-        if (statusFilter) statusFilter.addEventListener('change', filterBookings);
-        if (dateFilter) dateFilter.addEventListener('change', filterBookings);
-    }
-
-    function saveBusinessHours(e) {
-        e.preventDefault();
-        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        const businessHours = {};
-
-        days.forEach(day => {
-            const isOpen = document.querySelector(`[name="${day}-open"]`).checked;
-            businessHours[day] = {
-                closed: !isOpen,
-                open: document.querySelector(`[name="${day}-start"]`).value,
-                close: document.querySelector(`[name="${day}-end"]`).value
-            };
+            // Update active states
+            tabLinks.forEach(l => l.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            link.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
         });
+    });
 
-        localStorage.setItem('businessHours', JSON.stringify(businessHours));
-        alert('Business hours updated successfully!');
+    // Business Hours Management
+    const businessHoursForm = document.getElementById('businessHoursForm');
+    if (businessHoursForm) {
+        businessHoursForm.addEventListener('submit', saveBusinessHours);
+        loadBusinessHours();
     }
 
-    function loadBusinessHours() {
-        const businessHours = JSON.parse(localStorage.getItem('businessHours')) || {
-            sunday: { closed: true },
-            monday: { open: '10:00', close: '23:00', closed: false },
-            tuesday: { open: '10:00', close: '23:00', closed: false },
-            wednesday: { open: '10:00', close: '23:00', closed: false },
-            thursday: { open: '10:00', close: '23:00', closed: false },
-            friday: { open: '10:00', close: '23:00', closed: false },
-            saturday: { open: '10:00', close: '23:00', closed: false }
-        };
-
-        Object.entries(businessHours).forEach(([day, hours]) => {
-            const openCheckbox = document.querySelector(`[name="${day}-open"]`);
-            const startInput = document.querySelector(`[name="${day}-start"]`);
-            const endInput = document.querySelector(`[name="${day}-end"]`);
-
-            if (openCheckbox && startInput && endInput) {
-                openCheckbox.checked = !hours.closed;
-                startInput.value = hours.open;
-                endInput.value = hours.close;
-                startInput.disabled = hours.closed;
-                endInput.disabled = hours.closed;
-            }
-        });
+    // Settings Management
+    const settingsForm = document.getElementById('settingsForm');
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', saveSettings);
+        setupServiceManagement();
+        setupSocialMediaManagement();
+        setupHolidayManagement();
+        loadSettings();
     }
 
-    function saveSettings(e) {
-        e.preventDefault();
-        const settings = {
-            businessName: this.querySelector('[name="businessName"]').value,
-            contactEmail: this.querySelector('[name="contactEmail"]').value,
-            contactPhone: this.querySelector('[name="contactPhone"]').value,
-            bookingSettings: {
-                minNotice: parseInt(this.querySelector('[name="minNotice"]').value),
-                maxFuture: parseInt(this.querySelector('[name="maxFuture"]').value)
-            }
-        };
-
-        localStorage.setItem('businessSettings', JSON.stringify(settings));
-        alert('Settings saved successfully!');
-    }
-
-    function loadSettings() {
-        const settings = JSON.parse(localStorage.getItem('businessSettings')) || {
-            businessName: "River's Portfolio",
-            contactEmail: "",
-            contactPhone: "",
-            bookingSettings: {
-                minNotice: 24,
-                maxFuture: 30
-            }
-        };
-
-        const form = document.getElementById('settingsForm');
-        if (form) {
-            form.querySelector('[name="businessName"]').value = settings.businessName;
-            form.querySelector('[name="contactEmail"]').value = settings.contactEmail;
-            form.querySelector('[name="contactPhone"]').value = settings.contactPhone;
-            form.querySelector('[name="minNotice"]').value = settings.bookingSettings.minNotice;
-            form.querySelector('[name="maxFuture"]').value = settings.bookingSettings.maxFuture;
-        }
-    }
-
-    function filterBookings() {
-        const searchTerm = document.getElementById('searchBookings').value.toLowerCase();
-        const statusFilter = document.getElementById('statusFilter').value;
-        const dateFilter = document.getElementById('dateFilter').value;
-
-        const bookings = JSON.parse(localStorage.getItem('bookingResponses') || '[]');
-        const filteredBookings = bookings.filter(booking => {
-            const matchesSearch = !searchTerm || 
-                booking.name.toLowerCase().includes(searchTerm) ||
-                booking.email.toLowerCase().includes(searchTerm);
-            const matchesStatus = !statusFilter || booking.status === statusFilter;
-            const matchesDate = !dateFilter || booking.date === dateFilter;
-
-            return matchesSearch && matchesStatus && matchesDate;
-        });
-
-        displayBookings(filteredBookings);
-    }
-
-    function displayBookings(bookings) {
-        const bookingsList = document.getElementById('bookingsList');
-        if (!bookingsList) return;
-
-        const bookingsHTML = bookings.map(booking => `
-            <div class="booking-card">
-                <div class="booking-header">
-                    <h3>${booking.name}</h3>
-                    <span class="status ${booking.status}">${booking.status}</span>
-                </div>
-                <div class="booking-details">
-                    <p><strong>Date:</strong> ${booking.date}</p>
-                    <p><strong>Time:</strong> ${booking.time}</p>
-                    <p><strong>Email:</strong> ${booking.email}</p>
-                    <p><strong>Phone:</strong> ${booking.phone || 'N/A'}</p>
-                    <p><strong>Service:</strong> ${booking.service || 'N/A'}</p>
-                    <p><strong>Notes:</strong> ${booking.notes || 'N/A'}</p>
-                    <p class="submission-info">Submitted on ${new Date(booking.submissionTime).toLocaleString()}</p>
-                </div>
-                <div class="booking-actions">
-                    ${booking.status === 'pending' ? `
-                        <button onclick="updateBookingStatus(${booking.id}, 'approved')" 
-                                class="action-button approve">Approve</button>
-                        <button onclick="updateBookingStatus(${booking.id}, 'rejected')" 
-                                class="action-button reject">Reject</button>
-                    ` : ''}
-                    <button onclick="deleteBooking(${booking.id})" 
-                            class="action-button delete">Delete</button>
-                </div>
-            </div>
-        `).join('');
-
-        bookingsList.innerHTML = bookingsHTML || '<p>No bookings found</p>';
-    }
-
-    function updateBusinessStatus() {
-        const businessHours = JSON.parse(localStorage.getItem('businessHours'));
-        if (!businessHours) return;
-
-        const now = new Date(CURRENT_TIMESTAMP);
-        const currentDay = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
-        const status = document.getElementById('businessStatus');
-
-        if (status) {
-            const isOpen = !businessHours[currentDay].closed;
-            status.textContent = isOpen ? 'OPEN' : 'CLOSED';
-            status.className = `status-indicator ${isOpen ? 'open' : 'closed'}`;
-        }
-    }
-
-    function switchTab(tabId) {
-        document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.admin-sidebar li').forEach(tab => tab.classList.remove('active'));
-
-        document.getElementById(tabId).classList.add('active');
-        document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-
-        if (tabId === 'bookings') filterBookings();
-    }
-
-    function formatTimeAgo(timestamp) {
-        const now = new Date(CURRENT_TIMESTAMP);
-        const then = new Date(timestamp);
-        const seconds = Math.floor((now - then) / 1000);
-
-        if (seconds < 60) return 'just now';
-        if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
-        if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
-        return `${Math.floor(seconds / 86400)} days ago`;
-    }
-
-    // Make these functions available globally
-    window.updateBookingStatus = function(id, status) {
-        const bookings = JSON.parse(localStorage.getItem('bookingResponses') || '[]');
-        const index = bookings.findIndex(b => Number(b.id) === Number(id));
-        
-        if (index !== -1) {
-            bookings[index].status = status;
-            localStorage.setItem('bookingResponses', JSON.stringify(bookings));
-            filterBookings();
-            loadDashboardData();
-        }
-    };
-
-    window.deleteBooking = function(id) {
-        if (confirm('Are you sure you want to delete this booking?')) {
-            const bookings = JSON.parse(localStorage.getItem('bookingResponses') || '[]');
-            const filteredBookings = bookings.filter(b => Number(b.id) !== Number(id));
-            localStorage.setItem('bookingResponses', JSON.stringify(filteredBookings));
-            filterBookings();
-            loadDashboardData();
-        }
-    };
-
-    // Initial load
-    filterBookings();
+    // Initialize Dashboard
+    updateDashboardStats();
+    loadRecentActivity();
 });
+
+// Business Hours Functions
+function saveBusinessHours(e) {
+    e.preventDefault();
+    const hours = {};
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    
+    days.forEach(day => {
+        hours[day] = {
+            open: this.querySelector(`[name="${day}-open"]`).checked,
+            start: this.querySelector(`[name="${day}-start"]`).value,
+            end: this.querySelector(`[name="${day}-end"]`).value
+        };
+    });
+
+    localStorage.setItem('businessHours', JSON.stringify(hours));
+    addActivity('Business hours updated');
+    alert('Business hours saved successfully!');
+}
+
+function loadBusinessHours() {
+    const hours = JSON.parse(localStorage.getItem('businessHours')) || getDefaultBusinessHours();
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    
+    days.forEach(day => {
+        const dayData = hours[day];
+        const openCheckbox = document.querySelector(`[name="${day}-open"]`);
+        const startInput = document.querySelector(`[name="${day}-start"]`);
+        const endInput = document.querySelector(`[name="${day}-end"]`);
+        
+        if (openCheckbox && startInput && endInput) {
+            openCheckbox.checked = dayData.open;
+            startInput.value = dayData.start;
+            endInput.value = dayData.end;
+            startInput.disabled = !dayData.open;
+            endInput.disabled = !dayData.open;
+        }
+    });
+}
+
+// Settings Functions
+function saveSettings(e) {
+    e.preventDefault();
+    const settings = {
+        businessInfo: {
+            name: this.querySelector('[name="businessName"]').value,
+            contactEmail: this.querySelector('[name="contactEmail"]').value,
+            emergencyPhone: this.querySelector('[name="emergencyPhone"]').value,
+            contactPhone: this.querySelector('[name="contactPhone"]').value,
+            businessDescription: this.querySelector('[name="businessDescription"]').value,
+            location: this.querySelector('[name="location"]').value,
+            missionStatement: this.querySelector('[name="missionStatement"]').value
+        },
+        socialMedia: getSocialMediaData(),
+        holidays: getHolidayData(),
+        bookingSettings: {
+            minNotice: parseInt(this.querySelector('[name="minNotice"]').value),
+            maxFuture: parseInt(this.querySelector('[name="maxFuture"]').value),
+            services: getServiceData()
+        },
+        lastUpdated: CURRENT_TIMESTAMP,
+        lastUpdatedBy: CURRENT_USER
+    };
+
+    localStorage.setItem('businessSettings', JSON.stringify(settings));
+    addActivity('Settings updated');
+    alert('Settings saved successfully!');
+}
+
+function loadSettings() {
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    
+    // Load business info
+    Object.entries(settings.businessInfo).forEach(([key, value]) => {
+        const input = document.querySelector(`[name="${key}"]`);
+        if (input) input.value = value;
+    });
+
+    // Load social media
+    loadSocialMedia(settings.socialMedia);
+
+    // Load holidays
+    loadHolidays(settings.holidays);
+
+    // Load booking settings
+    document.querySelector('[name="minNotice"]').value = settings.bookingSettings.minNotice;
+    document.querySelector('[name="maxFuture"]').value = settings.bookingSettings.maxFuture;
+    loadServices(settings.bookingSettings.services);
+}
+
+// Social Media Management
+function setupSocialMediaManagement() {
+    const addButton = document.getElementById('addSocialMedia');
+    const socialMediaList = document.getElementById('socialMediaList');
+    const modal = document.getElementById('socialMediaModal');
+
+    addButton.addEventListener('click', () => {
+        modal.style.display = 'block';
+    });
+
+    document.getElementById('addSocialMediaConfirm').addEventListener('click', () => {
+        const platform = document.getElementById('socialPlatform').value;
+        const url = document.getElementById('socialUrl').value;
+        
+        if (url) {
+            addSocialMediaItem(platform, url);
+            modal.style.display = 'none';
+            document.getElementById('socialUrl').value = '';
+        }
+    });
+
+    document.getElementById('cancelSocialMedia').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+}
+
+function addSocialMediaItem(platform, url) {
+    const socialMediaList = document.getElementById('socialMediaList');
+    const item = document.createElement('div');
+    item.className = 'social-media-item';
+    
+    item.innerHTML = `
+        <div class="input-with-icon">
+            <i class="fab fa-${platform}"></i>
+            <input type="url" name="social-${platform}" value="${url}">
+            <button type="button" class="remove-social">&times;</button>
+        </div>
+    `;
+
+    socialMediaList.appendChild(item);
+    item.querySelector('.remove-social').addEventListener('click', () => item.remove());
+}
+
+// Service Management
+function setupServiceManagement() {
+    const addButton = document.getElementById('addService');
+    const servicesList = document.getElementById('servicesList');
+
+    addButton.addEventListener('click', () => {
+        const serviceCount = servicesList.children.length + 1;
+        addServiceItem('', serviceCount);
+    });
+}
+
+function addServiceItem(value, index) {
+    const servicesList = document.getElementById('servicesList');
+    const item = document.createElement('div');
+    item.className = 'service-item';
+    
+    item.innerHTML = `
+        <input type="text" name="service-${index}" value="${value}" placeholder="Service name">
+        <button type="button" class="remove-service">&times;</button>
+    `;
+
+    servicesList.appendChild(item);
+    item.querySelector('.remove-service').addEventListener('click', () => item.remove());
+}
+
+// Holiday Management
+function setupHolidayManagement() {
+    const addButton = document.getElementById('addHoliday');
+    const holidayList = document.getElementById('holidayList');
+
+    addButton.addEventListener('click', () => {
+        const holidayCount = holidayList.children.length + 1;
+        addHolidayItem('', '', holidayCount);
+    });
+}
+
+function addHolidayItem(name, date, index) {
+    const holidayList = document.getElementById('holidayList');
+    const item = document.createElement('div');
+    item.className = 'holiday-item';
+    
+    item.innerHTML = `
+        <input type="text" name="holiday-name-${index}" value="${name}" placeholder="Holiday Name">
+        <input type="date" name="holiday-date-${index}" value="${date}">
+        <button type="button" class="remove-holiday">&times;</button>
+    `;
+
+    holidayList.appendChild(item);
+    item.querySelector('.remove-holiday').addEventListener('click', () => item.remove());
+}
+
+// Dashboard Functions
+function updateDashboardStats() {
+    // Update booking statistics
+    document.getElementById('todayBookings').textContent = getTodayBookings().length;
+    document.getElementById('pendingBookings').textContent = getPendingBookings().length;
+    document.getElementById('totalBookings').textContent = getAllBookings().length;
+    
+    // Update business status
+    const status = checkBusinessStatus();
+    const statusElement = document.getElementById('businessStatus');
+    statusElement.textContent = status ? 'OPEN' : 'CLOSED';
+    statusElement.className = `status-indicator ${status ? 'open' : 'closed'}`;
+}
+
+function loadRecentActivity() {
+    const activityLog = document.getElementById('activityLog');
+    const activities = getRecentActivities();
+    
+    activityLog.innerHTML = activities.map(activity => `
+        <div class="activity-item">
+            <div class="activity-header">
+                <span>${activity.action}</span>
+                <small>${new Date(activity.timestamp).toLocaleString()}</small>
+            </div>
+            <p>${activity.description}</p>
+        </div>
+    `).join('');
+}
+
+// Utility Functions
+function addActivity(description) {
+    const activities = JSON.parse(localStorage.getItem('activities')) || [];
+    activities.unshift({
+        timestamp: CURRENT_TIMESTAMP,
+        action: 'Update',
+        description: description,
+        user: CURRENT_USER
+    });
+    localStorage.setItem('activities', JSON.stringify(activities.slice(0, 50)));
+    loadRecentActivity();
+}
+
+function getDefaultSettings() {
+    return {
+        businessInfo: {
+            name: "River's Portfolio",
+            contactEmail: "",
+            emergencyPhone: "555-123-4567",
+            contactPhone: "123-456-7890",
+            businessDescription: "",
+            location: "Hidden",
+            missionStatement: "To provide accessible and clean design for all."
+        },
+        socialMedia: [],
+        holidays: [
+            { name: "New Year's Day", date: "2025-01-01" },
+            { name: "Independence Day", date: "2025-07-04" },
+            { name: "Thanksgiving", date: "2025-11-28" },
+            { name: "Christmas", date: "2025-12-25" }
+        ],
+        bookingSettings: {
+            minNotice: 24,
+            maxFuture: 30,
+            services: ["Initial Consultation", "Follow-up Visit", "General Appointment", "Urgent Care"]
+        }
+    };
+}
+
+function getDefaultBusinessHours() {
+    return {
+        monday: { open: true, start: "09:00", end: "17:00" },
+        tuesday: { open: true, start: "09:00", end: "17:00" },
+        wednesday: { open: true, start: "09:00", end: "17:00" },
+        thursday: { open: true, start: "09:00", end: "17:00" },
+        friday: { open: true, start: "09:00", end: "16:00" },
+        saturday: { open: false, start: "09:00", end: "17:00" },
+        sunday: { open: false, start: "09:00", end: "17:00" }
+    };
+}
+
+// Helper Functions for Dashboard
+function getTodayBookings() {
+    return JSON.parse(localStorage.getItem('bookings')) || [];
+}
+
+function getPendingBookings() {
+    const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+    return bookings.filter(booking => booking.status === 'pending');
+}
+
+function getAllBookings() {
+    return JSON.parse(localStorage.getItem('bookings')) || [];
+}
+
+function getRecentActivities() {
+    return JSON.parse(localStorage.getItem('activities')) || [];
+}
+
+function checkBusinessStatus() {
+    const hours = JSON.parse(localStorage.getItem('businessHours')) || getDefaultBusinessHours();
+    const now = new Date(CURRENT_TIMESTAMP);
+    const day = now.toLocaleLowerCase().slice(0, 3);
+    
+    if (!hours[day].open) return false;
+    
+    const currentTime = now.getHours() * 100 + now.getMinutes();
+    const startTime = parseInt(hours[day].start.replace(':', ''));
+    const endTime = parseInt(hours[day].end.replace(':', ''));
+    
+    return currentTime >= startTime && currentTime <= endTime;
+}
