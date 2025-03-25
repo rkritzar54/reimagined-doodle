@@ -108,6 +108,12 @@ h2 {
 }
 
 /* Quick Links */
+.quick-links ul {
+    list-style: none; /* Remove bullets from the unordered list */
+    padding: 0; /* Remove any padding */
+    margin: 0; /* Remove any margin */
+}
+
 .quick-links a {
     display: block;
     background: #002147;
