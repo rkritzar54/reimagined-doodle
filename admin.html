@@ -7,6 +7,7 @@
     <!-- Add Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="admin-styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header class="admin-header">
@@ -86,12 +87,14 @@
                         <input type="date" id="dateFilter">
                     </div>
                 </div>
-                <div id="bookingsList"></div>
+                <div id="bookingsList" class="bookings-grid">
+                    <!-- Bookings will be dynamically added here -->
+                </div>
             </section>
 
             <!-- Business Hours Tab -->
             <section id="hours" class="admin-tab">
-                <h2>Business Hours</h2>
+                <h2>Business Hours & Holidays</h2>
                 <form id="businessHoursForm">
                     <div class="hours-grid">
                         <div class="day-settings">
@@ -101,9 +104,9 @@
                                     <input type="checkbox" name="monday-open" checked>
                                     Open
                                 </label>
-                                <input type="time" name="monday-start" value="10:00">
+                                <input type="time" name="monday-start" value="09:00">
                                 <span>to</span>
-                                <input type="time" name="monday-end" value="23:00">
+                                <input type="time" name="monday-end" value="17:00">
                             </div>
                         </div>
                         <div class="day-settings">
@@ -113,9 +116,9 @@
                                     <input type="checkbox" name="tuesday-open" checked>
                                     Open
                                 </label>
-                                <input type="time" name="tuesday-start" value="10:00">
+                                <input type="time" name="tuesday-start" value="09:00">
                                 <span>to</span>
-                                <input type="time" name="tuesday-end" value="23:00">
+                                <input type="time" name="tuesday-end" value="17:00">
                             </div>
                         </div>
                         <div class="day-settings">
@@ -125,9 +128,9 @@
                                     <input type="checkbox" name="wednesday-open" checked>
                                     Open
                                 </label>
-                                <input type="time" name="wednesday-start" value="10:00">
+                                <input type="time" name="wednesday-start" value="09:00">
                                 <span>to</span>
-                                <input type="time" name="wednesday-end" value="23:00">
+                                <input type="time" name="wednesday-end" value="17:00">
                             </div>
                         </div>
                         <div class="day-settings">
@@ -137,9 +140,9 @@
                                     <input type="checkbox" name="thursday-open" checked>
                                     Open
                                 </label>
-                                <input type="time" name="thursday-start" value="10:00">
+                                <input type="time" name="thursday-start" value="09:00">
                                 <span>to</span>
-                                <input type="time" name="thursday-end" value="23:00">
+                                <input type="time" name="thursday-end" value="17:00">
                             </div>
                         </div>
                         <div class="day-settings">
@@ -149,21 +152,21 @@
                                     <input type="checkbox" name="friday-open" checked>
                                     Open
                                 </label>
-                                <input type="time" name="friday-start" value="10:00">
+                                <input type="time" name="friday-start" value="09:00">
                                 <span>to</span>
-                                <input type="time" name="friday-end" value="23:00">
+                                <input type="time" name="friday-end" value="16:00">
                             </div>
                         </div>
                         <div class="day-settings">
                             <h3>Saturday</h3>
                             <div class="time-inputs">
                                 <label>
-                                    <input type="checkbox" name="saturday-open" checked>
+                                    <input type="checkbox" name="saturday-open">
                                     Open
                                 </label>
-                                <input type="time" name="saturday-start" value="10:00">
+                                <input type="time" name="saturday-start" value="09:00" disabled>
                                 <span>to</span>
-                                <input type="time" name="saturday-end" value="23:00">
+                                <input type="time" name="saturday-end" value="17:00" disabled>
                             </div>
                         </div>
                         <div class="day-settings">
@@ -173,12 +176,23 @@
                                     <input type="checkbox" name="sunday-open">
                                     Open
                                 </label>
-                                <input type="time" name="sunday-start" value="10:00" disabled>
+                                <input type="time" name="sunday-start" value="09:00" disabled>
                                 <span>to</span>
-                                <input type="time" name="sunday-end" value="23:00" disabled>
+                                <input type="time" name="sunday-end" value="17:00" disabled>
                             </div>
                         </div>
                     </div>
+
+                    <div class="setting-group">
+                        <h3>Holiday Hours</h3>
+                        <div id="holidayList">
+                            <!-- Holiday items will be dynamically added here -->
+                        </div>
+                        <button type="button" id="addHoliday" class="add-button">
+                            <i class="fas fa-plus"></i> Add Holiday
+                        </button>
+                    </div>
+
                     <button type="submit" class="save-button">Save Changes</button>
                 </form>
             </section>
@@ -186,7 +200,7 @@
             <!-- Settings Tab -->
             <section id="settings" class="admin-tab">
                 <h2>Settings</h2>
-                <form id="settingsForm" data-timestamp="2025-03-25 22:11:30" data-user="rkritzar54">
+                <form id="settingsForm" data-timestamp="2025-03-25 22:24:22" data-user="rkritzar54">
                     <div class="settings-grid">
                         <!-- Business Information -->
                         <div class="setting-group">
@@ -222,29 +236,18 @@
                                 <textarea name="missionStatement" rows="2">To provide accessible and clean design for all.</textarea>
                             </div>
                         </div>
-            
+
                         <!-- Social Media Links -->
                         <div class="setting-group">
                             <h3>Social Media</h3>
                             <div id="socialMediaList">
-                                <!-- Social media items will be added here -->
+                                <!-- Social media items will be dynamically added here -->
                             </div>
                             <button type="button" id="addSocialMedia" class="add-button">
                                 <i class="fas fa-plus"></i> Add Social Media
                             </button>
                         </div>
-            
-                        <!-- Holiday Settings -->
-                        <div class="setting-group">
-                            <h3>Holiday Hours</h3>
-                            <div id="holidayList">
-                                <!-- Holiday items will be added here -->
-                            </div>
-                            <button type="button" id="addHoliday" class="add-button">
-                                <i class="fas fa-plus"></i> Add Holiday
-                            </button>
-                        </div>
-            
+
                         <!-- Booking Settings -->
                         <div class="setting-group">
                             <h3>Booking Settings</h3>
@@ -259,7 +262,7 @@
                             <div class="form-group">
                                 <label>Available Services</label>
                                 <div id="servicesList">
-                                    <!-- Service items will be added here -->
+                                    <!-- Service items will be dynamically added here -->
                                 </div>
                                 <button type="button" id="addService" class="add-button">
                                     <i class="fas fa-plus"></i> Add Service
@@ -269,39 +272,39 @@
                     </div>
                     <button type="submit" class="save-button">Save Settings</button>
                 </form>
-            
-                <!-- Social Media Template Modal -->
-                <div id="socialMediaModal" class="modal">
-                    <div class="modal-content">
-                        <h3>Add Social Media</h3>
-                        <div class="form-group">
-                            <label>Platform</label>
-                            <select id="socialPlatform">
-                                <option value="facebook">Facebook</option>
-                                <option value="twitter">Twitter</option>
-                                <option value="linkedin">LinkedIn</option>
-                                <option value="github">GitHub</option>
-                                <option value="instagram">Instagram</option>
-                                <option value="youtube">YouTube</option>
-                                <option value="custom">Custom</option>
-                            </select>
-                        </div>
-                        <div class="form-group" id="customPlatformGroup" style="display: none;">
-                            <label>Custom Platform Name</label>
-                            <input type="text" id="customPlatform" placeholder="Enter platform name">
-                        </div>
-                        <div class="form-group">
-                            <label>URL</label>
-                            <input type="url" id="socialUrl" placeholder="https://...">
-                        </div>
-                        <div class="modal-actions">
-                            <button type="button" class="button" id="addSocialMediaConfirm">Add</button>
-                            <button type="button" class="button secondary" id="cancelSocialMedia">Cancel</button>
-                        </div>
-                    </div>
-                </div>
             </section>
         </main>
+    </div>
+
+    <!-- Social Media Modal -->
+    <div id="socialMediaModal" class="modal">
+        <div class="modal-content">
+            <h3>Add Social Media</h3>
+            <div class="form-group">
+                <label>Platform</label>
+                <select id="socialPlatform">
+                    <option value="facebook">Facebook</option>
+                    <option value="twitter">Twitter</option>
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="github">GitHub</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            <div class="form-group" id="customPlatformGroup" style="display: none;">
+                <label>Custom Platform Name</label>
+                <input type="text" id="customPlatform" placeholder="Enter platform name">
+            </div>
+            <div class="form-group">
+                <label>URL</label>
+                <input type="url" id="socialUrl" placeholder="https://...">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="button" id="addSocialMediaConfirm">Add</button>
+                <button type="button" class="button secondary" id="cancelSocialMedia">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <!-- Add JavaScript -->
