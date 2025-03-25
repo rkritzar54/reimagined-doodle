@@ -200,7 +200,32 @@
                             </div>
                             <div class="form-group">
                                 <label>Contact Phone</label>
-                                <input type="tel" name="contactPhone">
+                                <input type="tel" name="contactPhone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890">
+                            </div>
+                            <div class="form-group">
+                                <label>Business Description</label>
+                                <textarea name="businessDescription" rows="4" placeholder="Enter a brief description of your business"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Location</label>
+                                <input type="text" name="location" placeholder="City, State">
+                            </div>
+                            <div class="form-group">
+                                <label>Social Media</label>
+                                <div class="social-media-inputs">
+                                    <div class="input-with-icon">
+                                        <i class="fab fa-linkedin"></i>
+                                        <input type="url" name="linkedin" placeholder="LinkedIn URL">
+                                    </div>
+                                    <div class="input-with-icon">
+                                        <i class="fab fa-github"></i>
+                                        <input type="url" name="github" placeholder="GitHub URL">
+                                    </div>
+                                    <div class="input-with-icon">
+                                        <i class="fab fa-twitter"></i>
+                                        <input type="url" name="twitter" placeholder="Twitter URL">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -213,6 +238,18 @@
                             <div class="form-group">
                                 <label>Maximum Future Booking (days)</label>
                                 <input type="number" name="maxFuture" value="30">
+                            </div>
+                            <div class="form-group">
+                                <label>Available Services</label>
+                                <div id="servicesList">
+                                    <div class="service-item">
+                                        <input type="text" name="service-1" placeholder="Service name">
+                                        <button type="button" class="remove-service">&times;</button>
+                                    </div>
+                                </div>
+                                <button type="button" id="addService" class="add-button">
+                                    <i class="fas fa-plus"></i> Add Service
+                                </button>
                             </div>
                         </div>
                     </div>
