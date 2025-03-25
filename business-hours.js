@@ -4,12 +4,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Business hours in EDT
     const businessHours = {
         sunday: { closed: true },
-        monday: { open: '09:00', close: '17:00', closed: false },
-        tuesday: { open: '09:00', close: '17:00', closed: false },
-        wednesday: { open: '09:00', close: '17:00', closed: false },
-        thursday: { open: '09:00', close: '17:00', closed: false },
-        friday: { open: '09:00', close: '16:00', closed: false },
-        saturday: { closed: true }
+        monday: { open: '10:00', close: '23:00', closed: false },
+        tuesday: { open: '10:00', close: '23:00', closed: false },
+        wednesday: { open: '10:00', close: '23:00', closed: false },
+        thursday: { open: '10:00', close: '23:00', closed: false },
+        friday: { open: '10:00', close: '23:00', closed: false },
+        saturday: { open: '10:00', close: '23:00', closed: false }
     };
 
     const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
