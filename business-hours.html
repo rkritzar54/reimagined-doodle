@@ -13,7 +13,7 @@
             <img src="logo.png" alt="River's Logo" class="logo">
             <h1>River's Portfolio</h1>
         </div>
-        <div class="hamburger" id="hamburger">
+        <div id="hamburger">
             <span></span>
             <span></span>
             <span></span>
@@ -55,48 +55,95 @@
     <main class="main-container">
         <section class="full-width">
             <h2>Business Hours</h2>
-            <div class="business-hours">
-                <table>
-                    <tr>
-                        <th>Day</th>
-                        <th>Hours</th>
-                    </tr>
-                    <tr>
-                        <td>Monday</td>
-                        <td>9:00 AM - 5:00 PM</td>
-                    </tr>
-                    <tr>
-                        <td>Tuesday</td>
-                        <td>9:00 AM - 5:00 PM</td>
-                    </tr>
-                    <tr>
-                        <td>Wednesday</td>
-                        <td>9:00 AM - 5:00 PM</td>
-                    </tr>
-                    <tr>
-                        <td>Thursday</td>
-                        <td>9:00 AM - 5:00 PM</td>
-                    </tr>
-                    <tr>
-                        <td>Friday</td>
-                        <td>9:00 AM - 4:00 PM</td>
-                    </tr>
-                    <tr>
-                        <td>Saturday</td>
-                        <td>Closed</td>
-                    </tr>
-                    <tr>
-                        <td>Sunday</td>
-                        <td>Closed</td>
-                    </tr>
-                </table>
+            <div class="business-info">
+                <div class="status-bar">
+                    <span id="currentStatus" class="status-indicator"></span>
+                    <span id="nextChange"></span>
+                </div>
+                
+                <div class="time-info">
+                    <p>Current Time: <span id="currentTime">2025-03-25 18:48:18 UTC</span></p>
+                    <p>Last Updated by: <span id="lastUpdatedBy">rkritzar54</span></p>
+                    <p>Your Time Zone: <span id="userTimeZone"></span></p>
+                </div>
+
+                <div class="business-hours">
+                    <table>
+                        <tr>
+                            <th>Day</th>
+                            <th>Hours</th>
+                            <th>Status</th>
+                        </tr>
+                        <tr class="today">
+                            <td>Monday</td>
+                            <td>9:00 AM - 5:00 PM</td>
+                            <td><span class="status-dot"></span></td>
+                        </tr>
+                        <tr>
+                            <td>Tuesday</td>
+                            <td>9:00 AM - 5:00 PM</td>
+                            <td><span class="status-dot"></span></td>
+                        </tr>
+                        <tr>
+                            <td>Wednesday</td>
+                            <td>9:00 AM - 5:00 PM</td>
+                            <td><span class="status-dot"></span></td>
+                        </tr>
+                        <tr>
+                            <td>Thursday</td>
+                            <td>9:00 AM - 5:00 PM</td>
+                            <td><span class="status-dot"></span></td>
+                        </tr>
+                        <tr>
+                            <td>Friday</td>
+                            <td>9:00 AM - 4:00 PM</td>
+                            <td><span class="status-dot"></span></td>
+                        </tr>
+                        <tr>
+                            <td>Saturday</td>
+                            <td>Closed</td>
+                            <td><span class="status-dot closed"></span></td>
+                        </tr>
+                        <tr>
+                            <td>Sunday</td>
+                            <td>Closed</td>
+                            <td><span class="status-dot closed"></span></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="additional-info">
+                    <div class="info-card">
+                        <h3>Holiday Hours</h3>
+                        <p>We observe all major holidays. Special hours may apply:</p>
+                        <ul>
+                            <li>New Year's Day - Closed</li>
+                            <li>Independence Day - Closed</li>
+                            <li>Thanksgiving - Closed</li>
+                            <li>Christmas - Closed</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Appointment Booking</h3>
+                        <p>Schedule a meeting during our business hours:</p>
+                        <a href="#" class="button" id="bookingButton">Book Appointment</a>
+                        <p class="booking-note">* Appointments must be scheduled at least 24 hours in advance</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h3>Emergency Contact</h3>
+                        <p>For urgent matters outside business hours:</p>
+                        <p class="emergency-contact">Emergency: 567-436-8082</p>
+                        <p class="email-contact">Email: support@portfolio.com</p>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
 
     <footer>
         <div class="footer-wrapper">
-            <!-- Left Column -->
             <div class="footer-left">
                 <h2>River's Portfolio</h2>
                 <p>Address: Hidden</p>
@@ -107,18 +154,49 @@
                     <a href="https://linkedin.com" target="_blank">LinkedIn</a>
                 </div>
             </div>
-            
-            <!-- Right Column -->
             <div class="footer-right">
                 <p><strong>Mission Statement:</strong> To provide accessible and clean design for all.</p>
             </div>
         </div>
-
-        <!-- Footer bottom -->
         <div class="footer-bottom">
             <p>&copy; 2025 River Kritzar. All rights reserved.</p>
         </div>
     </footer>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close">&times;</button>
+            <h2>Book an Appointment</h2>
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="time">Time:</label>
+                    <select id="time" required>
+                        <option value="">Select a time</option>
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message:</label>
+                    <textarea id="message" rows="4"></textarea>
+                </div>
+                <button type="submit" class="button">Submit Booking</button>
+            </form>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
