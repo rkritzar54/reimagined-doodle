@@ -1,5 +1,5 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-25 23:20:54';
+const CURRENT_TIMESTAMP = '2025-03-25 23:34:07';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -129,12 +129,21 @@ function updateHolidayList(settings) {
     if (holidayList && settings.holidays) {
         holidayList.innerHTML = settings.holidays
             .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .map(holiday => `
-                <li>
-                    <strong>${holiday.name}</strong>
-                    <span>${new Date(holiday.date).toLocaleDateString()}</span>
-                </li>
-            `).join('');
+            .map(holiday => {
+                const holidayHours = holiday.closed ? 
+                    'Closed' : 
+                    `${convertEDTtoLocal(holiday.open)} - ${convertEDTtoLocal(holiday.close)}`;
+                
+                return `
+                    <li>
+                        <div class="holiday-info">
+                            <strong>${holiday.name}</strong>
+                            <span class="holiday-date">${new Date(holiday.date).toLocaleDateString()}</span>
+                        </div>
+                        <span class="holiday-hours">${holidayHours}</span>
+                    </li>
+                `;
+            }).join('');
     }
 }
 
@@ -186,6 +195,26 @@ function updateBusinessStatus(hours) {
 
 function checkIfOpen(hours) {
     const now = new Date(CURRENT_TIMESTAMP);
+    const today = now.toISOString().split('T')[0];
+    
+    // Check if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holiday = settings.holidays.find(h => h.date === today);
+    
+    if (holiday) {
+        if (holiday.closed) return false;
+        
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const [openHour, openMin] = holiday.open.split(':').map(Number);
+        const [closeHour, closeMin] = holiday.close.split(':').map(Number);
+        
+        const openMinutes = openHour * 60 + openMin;
+        const closeMinutes = closeHour * 60 + closeMin;
+        
+        return currentTime >= openMinutes && currentTime < closeMinutes;
+    }
+
+    // Regular business hours check
     const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
     const schedule = hours[day];
 
@@ -203,6 +232,20 @@ function checkIfOpen(hours) {
 
 function getNextChangeTime(hours, isOpen) {
     const now = new Date(CURRENT_TIMESTAMP);
+    const today = now.toISOString().split('T')[0];
+    
+    // Check if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holiday = settings.holidays.find(h => h.date === today);
+    
+    if (holiday) {
+        if (holiday.closed) {
+            return getNextOpeningTime(hours);
+        }
+        return isOpen ? `Closes at ${convertEDTtoLocal(holiday.close)}` : 
+                       `Opens at ${convertEDTtoLocal(holiday.open)}`;
+    }
+
     const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
     
     if (isOpen) {
@@ -219,8 +262,22 @@ function getNextOpeningTime(hours) {
     
     for (let i = 1; i <= 7; i++) {
         checkDay = (checkDay + 1) % 7;
-        const nextDay = days[checkDay];
+        const nextDate = new Date(now);
+        nextDate.setDate(now.getDate() + i);
+        const nextDateStr = nextDate.toISOString().split('T')[0];
         
+        // Check if next day is a holiday
+        const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+        const holiday = settings.holidays.find(h => h.date === nextDateStr);
+        
+        if (holiday) {
+            if (!holiday.closed) {
+                return `${holiday.name} at ${convertEDTtoLocal(holiday.open)}`;
+            }
+            continue;
+        }
+
+        const nextDay = days[checkDay];
         if (!hours[nextDay].closed) {
             return `${capitalize(nextDay)} at ${convertEDTtoLocal(hours[nextDay].open)}`;
         }
@@ -305,16 +362,49 @@ function setupBookingModal() {
 
 function handleDateChange(event) {
     const selectedDate = new Date(event.target.value);
+    const dateString = event.target.value;
     const dayOfWeek = selectedDate.getDay();
     const hours = getBusinessHours();
-    const schedule = hours[['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][dayOfWeek]];
-
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    
+    // Check if selected date is a holiday
+    const holiday = settings.holidays.find(h => h.date === dateString);
+    
     const timeInput = document.getElementById('time');
+    const timeHelp = document.getElementById('timeHelp');
+    
     if (!timeInput) return;
+
+    if (holiday) {
+        if (holiday.closed) {
+            timeInput.disabled = true;
+            timeInput.value = '';
+            if (timeHelp) {
+                timeHelp.textContent = `${holiday.name} - Closed`;
+            }
+            alert(`Selected date (${holiday.name}) is not available for booking. Please choose another day.`);
+            return;
+        }
+        
+        timeInput.disabled = false;
+        timeInput.min = holiday.open;
+        timeInput.max = holiday.close;
+        
+        if (timeHelp) {
+            timeHelp.textContent = `${holiday.name} hours: ${convertEDTtoLocal(holiday.open)} - ${convertEDTtoLocal(holiday.close)}`;
+        }
+        return;
+    }
+
+    // Regular business hours check
+    const schedule = hours[['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][dayOfWeek]];
 
     if (schedule.closed) {
         timeInput.disabled = true;
         timeInput.value = '';
+        if (timeHelp) {
+            timeHelp.textContent = 'Closed on this day';
+        }
         alert('Selected day is not available for booking. Please choose another day.');
         return;
     }
@@ -323,7 +413,6 @@ function handleDateChange(event) {
     timeInput.min = schedule.open;
     timeInput.max = schedule.close;
 
-    const timeHelp = document.getElementById('timeHelp');
     if (timeHelp) {
         timeHelp.textContent = `Business hours: ${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
     }
@@ -363,6 +452,33 @@ function validateBooking(booking) {
 
     const selectedDay = new Date(booking.date).getDay();
     const hours = getBusinessHours();
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    
+    // Check if booking date is a holiday
+    const holiday = settings.holidays.find(h => h.date === booking.date);
+    if (holiday) {
+        if (holiday.closed) {
+            alert(`Selected date (${holiday.name}) is not available for booking. Please choose another day.`);
+            return false;
+        }
+        
+        const [selectedHour, selectedMinute] = booking.time.split(':').map(Number);
+        const [openHour, openMinute] = holiday.open.split(':').map(Number);
+        const [closeHour, closeMinute] = holiday.close.split(':').map(Number);
+        
+        const selectedMinutes = selectedHour * 60 + selectedMinute;
+        const openMinutes = openHour * 60 + openMinute;
+        const closeMinutes = closeHour * 60 + closeMinute;
+        
+        if (selectedMinutes < openMinutes || selectedMinutes >= closeMinutes) {
+            alert(`Selected time is outside of holiday hours. Please choose a time between ${
+                convertEDTtoLocal(holiday.open)} and ${convertEDTtoLocal(holiday.close)}`);
+            return false;
+        }
+        return true;
+    }
+
+    // Regular business hours check
     const schedule = hours[['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][selectedDay]];
 
     if (schedule.closed) {
@@ -416,10 +532,34 @@ function getDefaultSettings() {
         },
         socialMedia: [],
         holidays: [
-            { name: "New Year's Day", date: "2025-01-01" },
-            { name: "Independence Day", date: "2025-07-04" },
-            { name: "Thanksgiving", date: "2025-11-28" },
-            { name: "Christmas", date: "2025-12-25" }
+            { 
+                name: "New Year's Day", 
+                date: "2025-01-01",
+                closed: true,
+                open: "",
+                close: ""
+            },
+            { 
+                name: "Independence Day", 
+                date: "2025-07-04",
+                closed: true,
+                open: "",
+                close: ""
+            },
+            { 
+                name: "Thanksgiving", 
+                date: "2025-11-28",
+                closed: true,
+                open: "",
+                close: ""
+            },
+            { 
+                name: "Christmas", 
+                date: "2025-12-25",
+                closed: true,
+                open: "",
+                close: ""
+            }
         ],
         bookingSettings: {
             minNotice: 24,
