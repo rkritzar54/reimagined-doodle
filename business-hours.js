@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const CURRENT_TIMESTAMP = '2025-03-25 20:58:44';
+    const CURRENT_TIMESTAMP = '2025-03-25 21:01:27';
     
     // Business hours in EDT
     const businessHours = {
@@ -18,19 +18,21 @@ document.addEventListener('DOMContentLoaded', function() {
     function convertEDTtoLocal(timeStr) {
         if (!timeStr) return '';
         
-        // Create a date object in EDT
         const [hours, minutes] = timeStr.split(':').map(Number);
-        const edtDate = new Date(CURRENT_TIMESTAMP);
-        edtDate.setHours(hours, minutes, 0);
-
-        // Convert to local time
-        const localDate = new Date(edtDate);
         
-        // Format in local time
+        // Create date object with the current date in EDT
+        const edtDate = new Date();
+        // EDT is UTC-4
+        edtDate.setUTCHours(hours + 4, minutes, 0, 0);
+        
+        // Now create a new date object in local time
+        const localDate = new Date(edtDate.getTime());
+        
         return localDate.toLocaleTimeString('en-US', {
             hour: 'numeric',
             minute: '2-digit',
-            hour12: true
+            hour12: true,
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
         });
     }
 
@@ -41,23 +43,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (daySchedule.closed) return false;
 
-        // Get current local time
-        const currentTime = now.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
+        // Get current time in EDT
+        const edtNow = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+        const currentHour = edtNow.getHours();
+        const currentMinute = edtNow.getMinutes();
+        
+        // Convert business hours to 24-hour format
+        const [openHour, openMinute] = daySchedule.open.split(':').map(Number);
+        const [closeHour, closeMinute] = daySchedule.close.split(':').map(Number);
 
-        // Convert business hours to local time
-        const localOpenTime = convertEDTtoLocal(daySchedule.open);
-        const localCloseTime = convertEDTtoLocal(daySchedule.close);
+        // Convert to minutes since midnight for comparison
+        const currentMinutes = (currentHour * 60) + currentMinute;
+        const openMinutes = (openHour * 60) + openMinute;
+        const closeMinutes = (closeHour * 60) + closeMinute;
 
         // Debug logging
-        console.log('Current local time:', currentTime);
-        console.log('Local opening time:', localOpenTime);
-        console.log('Local closing time:', localCloseTime);
+        console.log('Current EDT time:', `${currentHour}:${currentMinute}`);
+        console.log('Opening time:', `${openHour}:${openMinute}`);
+        console.log('Closing time:', `${closeHour}:${closeMinute}`);
+        console.log('Current minutes:', currentMinutes);
+        console.log('Open minutes:', openMinutes);
+        console.log('Close minutes:', closeMinutes);
 
-        return currentTime >= localOpenTime && currentTime < localCloseTime;
+        return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
     }
 
     function updateBusinessStatus() {
@@ -129,13 +137,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const schedule = businessHours[day];
             const isToday = day === currentDay;
             
-            const hours = schedule.closed ? 'Closed' : 
+            // Convert EDT hours to local time
+            const localOpen = schedule.closed ? 'Closed' : 
                 `${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
             
             return `
                 <tr${isToday ? ' class="today"' : ''}>
                     <td>${capitalize(day)}</td>
-                    <td>${hours}</td>
+                    <td>${localOpen}</td>
                 </tr>
             `;
         });
