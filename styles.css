@@ -111,7 +111,7 @@ h2 {
 /* Footer */
 footer {
     background: #002147;
-    color: white;
+    color: white; /* Makes all text in footer white */
     padding: 2rem 1rem;
     position: relative;
     left: 0;
@@ -139,10 +139,12 @@ footer {
 .footer-left h2 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
+    color: #FFFFFF; /* Ensures the title is white */
 }
 
 .footer-left p {
     margin: 0.5rem 0;
+    color: #FFFFFF; /* Ensures the address and phone number are also white */
 }
 
 .footer-left .social-links {
@@ -171,6 +173,7 @@ footer {
 
 .footer-right p {
     margin-bottom: 1rem;
+    color: #FFFFFF; /* Ensures the mission statement text is white */
 }
 
 /* Footer bottom */
@@ -179,7 +182,7 @@ footer .footer-bottom {
     width: 100%;
     margin-top: 2rem;
     font-size: 0.9rem;
-    color: #aaa;
+    color: #aaa; /* Slightly lighter text for the copyright */
 }
 
 /* Responsive Footer */
@@ -202,4 +205,3 @@ footer .footer-bottom {
         justify-content: center;
     }
 }
-
