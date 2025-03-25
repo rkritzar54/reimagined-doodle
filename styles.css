@@ -87,18 +87,18 @@ nav ul li:hover .dropdown-menu {
 }
 
 .mobile-menu {
-    display: none;
+    display: none; /* Hidden by default */
     flex-direction: column;
     background-color: #fff;
     position: absolute;
-    top: 70px; /* Adjust based on your header height */
+    top: 70px; /* Adjust based on header height */
     left: 0;
     width: 100%;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .mobile-menu.active {
-    display: flex;
+    display: flex; /* Show when active */
 }
 
 .mobile-menu li {
