@@ -1,69 +1,79 @@
-// Booking system functionality
-    const bookingButton = document.getElementById('bookingButton');
+document.addEventListener('DOMContentLoaded', function () {
     const bookingModal = document.getElementById('bookingModal');
-    
-    if (bookingButton && bookingModal) {
-        const closeModal = bookingModal.querySelector('.modal-close');
+    const bookingButton = document.getElementById('bookingButton');
+    const closeModalButton = document.querySelector('.modal-close');
+    const bookingForm = document.getElementById('bookingForm');
+    const timeDropdown = document.getElementById('time');
 
-        bookingButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            bookingModal.style.display = 'block';
-            document.body.classList.add('modal-open');
-            populateTimeSlots();
-        });
+    // Define available time slots (in 24-hour format)
+    const availableTimes = [
+        "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"
+    ];
 
-        if (closeModal) {
-            closeModal.addEventListener('click', function() {
-                bookingModal.style.display = 'none';
-                document.body.classList.remove('modal-open');
-            });
+    // Open the booking modal
+    bookingButton.addEventListener('click', function () {
+        bookingModal.style.display = 'block';
+        populateTimeDropdown(); // Populate the time dropdown when the modal opens
+    });
+
+    // Close the modal
+    closeModalButton.addEventListener('click', function () {
+        bookingModal.style.display = 'none';
+    });
+
+    // Close modal when clicking outside of the modal content
+    window.addEventListener('click', function (event) {
+        if (event.target === bookingModal) {
+            bookingModal.style.display = 'none';
         }
+    });
 
-        window.addEventListener('click', function(e) {
-            if (e.target === bookingModal) {
-                bookingModal.style.display = 'none';
-                document.body.classList.remove('modal-open');
-            }
+    // Populate the time dropdown with available slots
+    function populateTimeDropdown() {
+        timeDropdown.innerHTML = '<option value="">Select a time</option>'; // Clear existing options
+        availableTimes.forEach(time => {
+            const option = document.createElement('option');
+            option.value = time;
+            option.textContent = formatTimeForDisplay(time);
+            timeDropdown.appendChild(option);
         });
-
-        const bookingForm = document.getElementById('bookingForm');
-        if (bookingForm) {
-            bookingForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                alert('Booking submitted successfully!');
-                bookingModal.style.display = 'none';
-                document.body.classList.remove('modal-open');
-            });
-        }
     }
 
-    function populateTimeSlots() {
-        const timeSelect = document.getElementById('time');
-        const dateInput = document.getElementById('date');
-        
-        if (!timeSelect || !dateInput) return;
-
-        dateInput.addEventListener('change', function() {
-            const selectedDate = new Date(this.value);
-            const day = selectedDate.toLocaleDateString('en-US', { weekday: 'lowercase' });
-            const hours = businessHours[day];
-            
-            timeSelect.innerHTML = '<option value="">Select a time</option>';
-            
-            if (!hours.closed) {
-                const [openHour] = hours.open.split(':');
-                const [closeHour] = hours.close.split(':');
-                
-                for (let hour = parseInt(openHour); hour < parseInt(closeHour); hour++) {
-                    for (let minute of ['00', '30']) {
-                        const time = `${hour.toString().padStart(2, '0')}:${minute}`;
-                        const displayTime = convertTime(time);
-                        timeSelect.innerHTML += `<option value="${time}">${displayTime}</option>`;
-                    }
-                }
-            }
-        });
+    // Format 24-hour time (e.g., "13:00") to 12-hour format (e.g., "1:00 PM")
+    function formatTimeForDisplay(time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12; // Convert 0 to 12 for midnight
+        return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
     }
+
+    // Handle form submission
+    bookingForm.addEventListener('submit', function (event) {
+        event.preventDefault(); // Prevent actual form submission
+
+        // Capture form data
+        const formData = {
+            name: document.getElementById('name').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            date: document.getElementById('date').value,
+            time: document.getElementById('time').value,
+            message: document.getElementById('message').value.trim(),
+        };
+
+        // Validate form data
+        if (!formData.name || !formData.email || !formData.date || !formData.time) {
+            alert("Please complete all required fields.");
+            return;
+        }
+
+        // Submit the booking (or simulate submission for now)
+        console.log("Booking Submitted:", formData); // Debugging: Log form data
+        alert(`Thank you, ${formData.name}! Your booking for ${formData.date} at ${formData.time} has been submitted.`);
+
+        // Clear the form and close the modal
+        bookingForm.reset();
+        bookingModal.style.display = 'none';
+    });
 });
 
     // Modal functionality for articles
