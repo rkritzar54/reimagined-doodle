@@ -1,15 +1,17 @@
-// JavaScript to toggle the mobile menu
+// Get the hamburger and mobile menu elements
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.querySelector('.mobile-menu');
 
-// Toggle the mobile menu when the hamburger is clicked
+// Toggle mobile menu when hamburger is clicked
 hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
     mobileMenu.classList.toggle('active');
 });
 
-// Close the mobile menu when clicking outside the menu or hamburger
-window.addEventListener('click', (event) => {
+// Close menu when clicking outside
+document.addEventListener('click', (event) => {
     if (!hamburger.contains(event.target) && !mobileMenu.contains(event.target)) {
+        hamburger.classList.remove('active');
         mobileMenu.classList.remove('active');
     }
 });
