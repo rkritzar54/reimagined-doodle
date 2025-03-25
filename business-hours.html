@@ -10,7 +10,7 @@
     <!-- Header Section -->
     <header>
         <div class="logo-title">
-            <img src="logo.png" alt="River's Logo" class="logo">
+            <img src="images/logo.png" alt="River's Logo" class="logo">
             <h1>River's Portfolio</h1>
         </div>
         <div id="hamburger">
@@ -46,9 +46,9 @@
         </nav>
     </header>
 
-    <!-- Banner -->
+    <!-- Banner Section -->
     <div class="banner">
-        <img src="banner.jpg" alt="Banner Image">
+        <img src="images/banner.jpg" alt="Banner Image">
     </div>
 
     <!-- Main Content -->
@@ -56,38 +56,39 @@
         <div class="full-width">
             <div class="business-info">
                 <div class="business-hours">
-    <h2>Business Hours</h2>
-    
-    <!-- Status Bar - Fixed structure -->
-    <div class="status-bar">
-        <div class="status-wrapper">
-            <span id="currentStatus" class="status-indicator"></span>
-            <span>We are currently <strong><span id="openClosedText">CHECKING...</span></strong></span>
-        </div>
-        <div id="nextChange"></div>
-    </div>
+                    <h2>Business Hours</h2>
+                    
+                    <!-- Status Bar -->
+                    <div class="status-bar">
+                        <div class="status-wrapper">
+                            <span id="currentStatus" class="status-indicator"></span>
+                            <span>We are currently <strong><span id="openClosedText">CHECKING...</span></strong></span>
+                        </div>
+                        <div id="nextChange"></div>
+                    </div>
 
-    <!-- Time Info - Fixed structure -->
-    <div class="time-info">
-        <p><strong>Current Time:</strong> <span id="currentTime">Loading...</span></p>
-        <p><strong>Your Timezone:</strong> <span id="userTimeZone">Loading...</span></p>
-    </div>
+                    <!-- Time Info -->
+                    <div class="time-info">
+                        <p><strong>Current Time:</strong> <span id="currentTime">Loading...</span></p>
+                        <p><strong>Your Timezone:</strong> <span id="userTimeZone">Loading...</span></p>
+                    </div>
 
-    <!-- Hours Table - Fixed structure -->
-    <div class="hours-table">
-        <table>
-            <thead>
-                <tr>
-                    <th>Day</th>
-                    <th>Hours (Your Local Time)</th>
-                </tr>
-            </thead>
-            <tbody id="hoursTable">
-                <!-- Will be populated by JavaScript -->
-            </tbody>
-        </table>
-    </div>
+                    <!-- Hours Table -->
+                    <div class="hours-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Hours (Your Local Time)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hoursTable">
+                                <!-- Will be dynamically populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
 
+                    <!-- Additional Info Section -->
                     <div class="additional-info">
                         <div class="info-card">
                             <h3>Holiday Hours</h3>
@@ -117,6 +118,7 @@
         </div>
     </main>
 
+    <!-- Footer Section -->
     <footer>
         <div class="footer-wrapper">
             <div class="footer-left">
@@ -160,7 +162,7 @@
                     <label for="time">Time:</label>
                     <select id="time" required>
                         <option value="">Select a time</option>
-                        <!-- Options will be populated by JavaScript -->
+                        <!-- Options will be dynamically populated -->
                     </select>
                 </div>
                 <div class="form-group">
@@ -172,6 +174,7 @@
         </div>
     </div>
 
+    <!-- Link to JavaScript -->
     <script src="script.js"></script>
 </body>
 </html>
