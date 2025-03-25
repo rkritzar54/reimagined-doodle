@@ -85,14 +85,19 @@ nav ul li:hover .dropdown-menu {
     width: 48%;
 }
 
-.left {
-    padding-right: 2rem;
-}
-
+/* Space adjustments in right column */
 .right {
     padding-left: 2rem;
     background-color: #f7f7f7;
     border-radius: 8px;
+}
+
+.right > * {
+    margin-bottom: 1.5rem; /* Add space between each item in the right column */
+}
+
+.right h2 {
+    margin-bottom: 1.5rem; /* Ensure the title has space at the bottom */
 }
 
 /* Section Titles */
@@ -127,6 +132,20 @@ footer {
     position: relative;
     width: 100%;
     text-align: center;
+}
+
+/* Footer Title */
+footer h2 {
+    color: white; /* Ensure the title in the footer is white */
+}
+
+/* Footer Links */
+footer a {
+    color: white; /* Ensure any links in the footer are white */
+}
+
+footer a:hover {
+    color: #aaa; /* Slight hover effect for links */
 }
 
 /* Footer Wrapper */
