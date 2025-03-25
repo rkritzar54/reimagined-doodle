@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const CURRENT_TIMESTAMP = '2025-03-25 21:31:33';
+    const CURRENT_TIMESTAMP = '2025-03-25 21:52:32';
     const CURRENT_USER = 'rkritzar54';
 
     // Set admin status
@@ -214,17 +214,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p><strong>Date:</strong> ${booking.date}</p>
                     <p><strong>Time:</strong> ${booking.time}</p>
                     <p><strong>Email:</strong> ${booking.email}</p>
-                    <p><strong>Message:</strong> ${booking.message || 'N/A'}</p>
+                    <p><strong>Phone:</strong> ${booking.phone || 'N/A'}</p>
+                    <p><strong>Service:</strong> ${booking.service || 'N/A'}</p>
+                    <p><strong>Notes:</strong> ${booking.notes || 'N/A'}</p>
                     <p class="submission-info">Submitted on ${new Date(booking.submissionTime).toLocaleString()}</p>
                 </div>
                 <div class="booking-actions">
                     ${booking.status === 'pending' ? `
-                        <button onclick="updateBookingStatus('${booking.id}', 'approved')" 
+                        <button onclick="updateBookingStatus(${booking.id}, 'approved')" 
                                 class="action-button approve">Approve</button>
-                        <button onclick="updateBookingStatus('${booking.id}', 'rejected')" 
+                        <button onclick="updateBookingStatus(${booking.id}, 'rejected')" 
                                 class="action-button reject">Reject</button>
                     ` : ''}
-                    <button onclick="deleteBooking('${booking.id}')" 
+                    <button onclick="deleteBooking(${booking.id})" 
                             class="action-button delete">Delete</button>
                 </div>
             </div>
@@ -272,7 +274,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make these functions available globally
     window.updateBookingStatus = function(id, status) {
         const bookings = JSON.parse(localStorage.getItem('bookingResponses') || '[]');
-        const index = bookings.findIndex(b => b.id === id);
+        const index = bookings.findIndex(b => Number(b.id) === Number(id));
         
         if (index !== -1) {
             bookings[index].status = status;
@@ -285,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.deleteBooking = function(id) {
         if (confirm('Are you sure you want to delete this booking?')) {
             const bookings = JSON.parse(localStorage.getItem('bookingResponses') || '[]');
-            const filteredBookings = bookings.filter(b => b.id !== id);
+            const filteredBookings = bookings.filter(b => Number(b.id) !== Number(id));
             localStorage.setItem('bookingResponses', JSON.stringify(filteredBookings));
             filterBookings();
             loadDashboardData();
