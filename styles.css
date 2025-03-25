@@ -78,10 +78,21 @@ nav ul li:hover .dropdown-menu {
     padding: 2rem;
     max-width: 1200px;
     margin: auto;
+    gap: 2rem;
 }
 
 .left, .right {
     width: 48%;
+}
+
+.left {
+    padding-right: 2rem;
+}
+
+.right {
+    padding-left: 2rem;
+    background-color: #f7f7f7;
+    border-radius: 8px;
 }
 
 /* Section Titles */
@@ -111,84 +122,44 @@ h2 {
 /* Footer */
 footer {
     background: #002147;
-    color: white; /* Makes all text in footer white */
+    color: white;
     padding: 2rem 1rem;
     position: relative;
-    left: 0;
-    right: 0;
-    width: 100%; /* Ensures it spans the full width */
+    width: 100%;
     text-align: center;
 }
 
 /* Footer Wrapper */
 .footer-wrapper {
-    max-width: 1200px; /* Keeps the content centered */
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
-    flex-wrap: wrap; /* Ensures it wraps on smaller screens */
+    flex-wrap: wrap;
 }
 
-/* Left Column */
-.footer-left {
-    flex: 1;
-    margin-right: 20px;
-    text-align: left;
+/* Footer Columns */
+.footer-left, .footer-right {
+    width: 48%;
 }
 
-.footer-left h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: #FFFFFF; /* Ensures the title is white */
-}
-
-.footer-left p {
-    margin: 0.5rem 0;
-    color: #FFFFFF; /* Ensures the address and phone number are also white */
-}
-
-.footer-left .social-links {
-    display: flex;
-    justify-content: flex-start;
-    margin-top: 1rem;
-}
-
-.footer-left .social-links a {
-    font-size: 1.2rem;
-    margin: 0 10px;
-    color: white;
-    text-decoration: none;
-}
-
-.footer-left .social-links a:hover {
-    color: #0042a3;
-}
-
-/* Right Column */
-.footer-right {
-    flex: 1;
-    margin-left: 20px;
-    text-align: left;
-}
-
-.footer-right p {
-    margin-bottom: 1rem;
-    color: #FFFFFF; /* Ensures the mission statement text is white */
-}
-
-/* Footer bottom */
-footer .footer-bottom {
-    text-align: center;
-    width: 100%;
-    margin-top: 2rem;
+/* Footer Bottom */
+.footer-bottom {
     font-size: 0.9rem;
-    color: #aaa; /* Slightly lighter text for the copyright */
+    color: #aaa;
+    margin-top: 2rem;
 }
 
-/* Responsive Footer */
-@media (max-width: 768px) {
-    footer {
-        padding: 1.5rem 1rem;
+/* Responsive Layout for Tablets and Smaller Screens */
+@media (max-width: 1024px) {
+    .main-container {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .left, .right {
+        width: 100%; /* Full width on tablets */
+        padding: 1rem;
     }
 
     .footer-wrapper {
@@ -197,11 +168,80 @@ footer .footer-bottom {
     }
 
     .footer-left, .footer-right {
-        margin: 0;
-        flex: unset;
+        width: 100%;
+        margin-bottom: 1rem;
     }
 
-    .footer-left .social-links {
-        justify-content: center;
+    .footer-bottom {
+        font-size: 1rem;
+    }
+
+    h2 {
+        font-size: 1.3rem; /* Slightly smaller font size for tablets */
+    }
+
+    .quick-links a {
+        font-size: 1.1rem;
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    /* Header Adjustments */
+    header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    nav ul {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    nav ul li {
+        margin: 0;
+        padding: 0.5rem;
+    }
+
+    .main-container {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1rem;
+    }
+
+    .left, .right {
+        width: 100%; /* Full width on mobile */
+        padding: 1rem;
+    }
+
+    .footer-wrapper {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .footer-left, .footer-right {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+
+    .footer-bottom {
+        font-size: 1rem;
+    }
+
+    h2 {
+        font-size: 1.2rem; /* Slightly smaller font size for mobile */
+    }
+
+    .quick-links a {
+        font-size: 1.1rem;
+    }
+
+    .logo {
+        width: 30px;
+        height: 30px; /* Smaller logo on mobile */
+    }
+
+    .logo-title {
+        font-size: 1.2rem; /* Adjust logo/title size on mobile */
     }
 }
