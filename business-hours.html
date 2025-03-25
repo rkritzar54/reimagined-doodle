@@ -56,30 +56,37 @@
         <div class="full-width">
             <div class="business-info">
                 <div class="business-hours">
-                    <h2>Business Hours</h2>
-                    
-                    <div class="status-bar">
-                        <span id="currentStatus" class="status-indicator"></span>
-                        <span>We are currently <span id="openClosedText">CHECKING...</span></span>
-                        <span id="nextChange"></span>
-                    </div>
+    <h2>Business Hours</h2>
+    
+    <!-- Status Bar - Fixed structure -->
+    <div class="status-bar">
+        <div class="status-wrapper">
+            <span id="currentStatus" class="status-indicator"></span>
+            <span>We are currently <strong><span id="openClosedText">CHECKING...</span></strong></span>
+        </div>
+        <div id="nextChange"></div>
+    </div>
 
-                    <div class="time-info">
-                        <p>Current Time: <span id="currentTime">Loading...</span></p>
-                        <p>Your Timezone: <span id="userTimeZone">Loading...</span></p>
-                    </div>
+    <!-- Time Info - Fixed structure -->
+    <div class="time-info">
+        <p><strong>Current Time:</strong> <span id="currentTime">Loading...</span></p>
+        <p><strong>Your Timezone:</strong> <span id="userTimeZone">Loading...</span></p>
+    </div>
 
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Day</th>
-                                <th>Hours (Your Local Time)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="hoursTable">
-                            <!-- Will be populated by JavaScript -->
-                        </tbody>
-                    </table>
+    <!-- Hours Table - Fixed structure -->
+    <div class="hours-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Hours (Your Local Time)</th>
+                </tr>
+            </thead>
+            <tbody id="hoursTable">
+                <!-- Will be populated by JavaScript -->
+            </tbody>
+        </table>
+    </div>
 
                     <div class="additional-info">
                         <div class="info-card">
