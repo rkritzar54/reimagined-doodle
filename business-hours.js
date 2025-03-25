@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Constants - using exact UTC timestamp but converting to local time
-    const CURRENT_TIMESTAMP = '2025-03-25 20:40:24';
+    // Constants - using exact UTC timestamp
+    const CURRENT_TIMESTAMP = '2025-03-25 20:43:21';
     
     const businessHours = {
         monday: { open: '09:00', close: '17:00', closed: false },
@@ -51,10 +51,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const now = new Date(CURRENT_TIMESTAMP);
         const currentDay = DAYS[now.getDay()];
 
-        const tableContent = DAYS.map(day => {
+        tableBody.innerHTML = DAYS.map(day => {
             const schedule = businessHours[day];
             const isToday = day === currentDay;
-            
             return `
                 <tr${isToday ? ' class="today"' : ''}>
                     <td>${capitalize(day)}</td>
@@ -62,8 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </tr>
             `;
         }).join('');
-
-        tableBody.innerHTML = tableContent;
     }
 
     function updateBusinessStatus() {
@@ -77,23 +74,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const currentDay = DAYS[now.getDay()];
         const daySchedule = businessHours[currentDay];
 
+        // Convert UTC to EST (UTC-4)
+        const estHours = (now.getUTCHours() - 4 + 24) % 24;
+        const estMinutes = now.getUTCMinutes();
+        const currentMinutesEST = estHours * 60 + estMinutes;
+
         if (daySchedule.closed) {
             setClosedStatus(indicator, statusText, nextChange);
             return;
         }
 
-        // Convert current time to local time
-        const localHours = now.getHours();
-        const localMinutes = now.getMinutes();
-        const currentMinutes = localHours * 60 + localMinutes;
-
-        // Convert business hours to minutes for comparison
+        // Parse business hours
         const [openHour, openMin] = daySchedule.open.split(':').map(Number);
         const [closeHour, closeMin] = daySchedule.close.split(':').map(Number);
         const openMinutes = openHour * 60 + openMin;
         const closeMinutes = closeHour * 60 + closeMin;
 
-        if (currentMinutes >= openMinutes && currentMinutes < closeMinutes) {
+        // Debug output
+        console.log(`Current EST time: ${estHours}:${estMinutes}`);
+        console.log(`Business hours: ${openHour}:${openMin} - ${closeHour}:${closeMin}`);
+        console.log(`Current minutes since midnight: ${currentMinutesEST}`);
+        console.log(`Open minutes: ${openMinutes}, Close minutes: ${closeMinutes}`);
+
+        if (currentMinutesEST >= openMinutes && currentMinutesEST < closeMinutes) {
             setOpenStatus(indicator, statusText, nextChange, daySchedule.close);
         } else {
             setClosedStatus(indicator, statusText, nextChange);
@@ -148,4 +151,30 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update every minute
     setInterval(initializeAll, 60000);
+
+    // Handle booking modal and other UI interactions
+    const bookingButton = document.getElementById('bookingButton');
+    const bookingModal = document.getElementById('bookingModal');
+    const closeModal = document.querySelector('.modal-close');
+
+    if (bookingButton && bookingModal) {
+        bookingButton.addEventListener('click', () => {
+            bookingModal.style.display = 'block';
+            document.body.classList.add('modal-open');
+        });
+
+        if (closeModal) {
+            closeModal.addEventListener('click', () => {
+                bookingModal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+            });
+        }
+
+        window.addEventListener('click', (e) => {
+            if (e.target === bookingModal) {
+                bookingModal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+            }
+        });
+    }
 });
