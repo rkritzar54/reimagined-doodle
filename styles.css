@@ -20,7 +20,7 @@ header {
     padding: 1rem 2rem;
     background-color: white;
     border-bottom: 1px solid #ddd;
-    position: relative; /* Added for mobile menu positioning */
+    position: relative;
 }
 
 .logo-title {
@@ -42,7 +42,7 @@ h1 {
 
 /* Navigation */
 nav {
-    position: relative; /* Added for dropdown positioning */
+    position: relative;
 }
 
 nav ul.desktop-menu {
@@ -62,7 +62,7 @@ nav ul li a {
     font-weight: bold;
     padding: 0.5rem 1rem;
     transition: background 0.3s, color 0.3s;
-    display: block; /* Added for better touch targets */
+    display: block;
 }
 
 nav ul li a:hover {
@@ -82,11 +82,17 @@ nav ul li .dropdown-menu {
     list-style: none;
     width: 200px;
     padding: 10px 0;
-    z-index: 1000; /* Added to ensure dropdown appears above content */
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 nav ul li:hover .dropdown-menu {
     display: block;
+}
+
+nav ul li .dropdown-menu li a {
+    padding: 0.5rem 1rem;
+    white-space: nowrap;
 }
 
 /* Hamburger Menu */
@@ -94,7 +100,7 @@ nav ul li:hover .dropdown-menu {
     display: none;
     cursor: pointer;
     padding: 10px;
-    z-index: 1001; /* Ensure it's above the mobile menu */
+    z-index: 1001;
 }
 
 #hamburger span {
@@ -131,7 +137,207 @@ nav ul.mobile-menu li a {
     display: block;
 }
 
-/* Rest of your styles remain the same until media queries */
+/* Banner */
+.banner img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+/* Main Content */
+.main-container {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.left, .right {
+    width: 48%;
+}
+
+/* Section Titles */
+h2 {
+    color: #002147;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+h3 {
+    font-size: 1.2rem;
+    margin-top: 2rem;
+    color: #002147;
+}
+
+h4 {
+    font-size: 1rem;
+    color: #002147;
+    margin-top: 1rem;
+}
+
+/* Quick Links */
+.quick-links a {
+    display: block;
+    background: #002147;
+    color: white;
+    text-align: center;
+    padding: 0.75rem;
+    border-radius: 5px;
+    margin-top: 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.quick-links a:hover {
+    background: #0042a3;
+}
+
+/* Business Hours Page */
+.full-width {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.business-hours table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.business-hours th,
+.business-hours td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.business-hours th {
+    background-color: #002147;
+    color: white;
+}
+
+/* About Content */
+.about-content {
+    line-height: 1.6;
+}
+
+.about-content h3 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+.about-content ul {
+    list-style-type: disc;
+    margin-left: 20px;
+    margin-bottom: 20px;
+}
+
+/* News Pages */
+.news-timestamp {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+}
+
+.news-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.news-item {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.news-item h3 {
+    color: #002147;
+    margin-bottom: 10px;
+}
+
+.news-meta {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.news-item p {
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.read-more {
+    display: inline-block;
+    color: #002147;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.read-more:hover {
+    text-decoration: underline;
+}
+
+/* Footer */
+footer {
+    background: #002147;
+    color: white;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+footer .footer-wrapper {
+    display: flex;
+    justify-content: space-between;
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+footer .footer-left, footer .footer-right {
+    width: 48%;
+    text-align: left;
+}
+
+footer .footer-left h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+footer .footer-left p {
+    margin-bottom: 0.5rem;
+}
+
+footer .footer-right p {
+    margin-bottom: 1rem;
+}
+
+.footer-bottom {
+    background: #00172b;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+/* Social Links */
+.social-links {
+    margin-top: 1rem;
+}
+
+.social-links a {
+    color: white;
+    text-decoration: none;
+    margin-right: 1rem;
+}
+
+.social-links a:hover {
+    text-decoration: underline;
+}
 
 /* Responsive Styles */
 @media (max-width: 768px) {
@@ -181,6 +387,20 @@ nav ul.mobile-menu li a {
     footer .footer-left, footer .footer-right {
         width: 100%;
         text-align: center;
+    }
+
+    .social-links {
+        text-align: center;
+        margin: 1rem 0;
+    }
+
+    .social-links a {
+        margin: 0 0.5rem;
+    }
+
+    /* Business hours table adjustment */
+    .business-hours {
+        overflow-x: auto;
     }
 }
 
