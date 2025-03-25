@@ -10,7 +10,9 @@ body {
     background-color: white;
     color: #002147;
     line-height: 1.6;
-    padding-top: 70px; /* Add padding for fixed header */
+    padding-top: 70px;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 /* Header */
@@ -138,6 +140,7 @@ nav ul.mobile-menu {
 
 nav ul.mobile-menu li {
     border-bottom: 1px solid #ddd;
+    width: 100%;
 }
 
 nav ul.mobile-menu li:last-child {
@@ -147,11 +150,13 @@ nav ul.mobile-menu li:last-child {
 nav ul.mobile-menu li a {
     padding: 15px 20px;
     display: block;
+    width: 100%;
 }
 
 /* Banner */
 .banner {
     margin-top: 70px;
+    width: 100%;
 }
 
 .banner img {
@@ -166,7 +171,8 @@ nav ul.mobile-menu li a {
     justify-content: space-between;
     padding: 2rem;
     max-width: 1200px;
-    margin: auto;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .left, .right {
@@ -178,18 +184,21 @@ h2 {
     color: #002147;
     font-size: 1.5rem;
     margin-bottom: 1rem;
+    width: 100%;
 }
 
 h3 {
     font-size: 1.2rem;
     margin-top: 2rem;
     color: #002147;
+    width: 100%;
 }
 
 h4 {
     font-size: 1rem;
     color: #002147;
     margin-top: 1rem;
+    width: 100%;
 }
 
 /* Quick Links */
@@ -197,10 +206,12 @@ h4 {
     list-style: none;
     padding: 0;
     margin: 0;
+    width: 100%;
 }
 
 .quick-links li {
     margin-bottom: 10px;
+    width: 100%;
 }
 
 .quick-links a {
@@ -212,6 +223,7 @@ h4 {
     border-radius: 5px;
     text-decoration: none;
     font-weight: bold;
+    width: 100%;
 }
 
 .quick-links a:hover {
@@ -221,7 +233,7 @@ h4 {
 /* Business Hours Page */
 .full-width {
     width: 100%;
-    max-width: 1000px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 20px;
 }
@@ -247,6 +259,7 @@ h4 {
 /* About Content */
 .about-content {
     line-height: 1.6;
+    width: 100%;
 }
 
 .about-content h3 {
@@ -265,12 +278,14 @@ h4 {
     color: #666;
     font-size: 0.9em;
     margin-bottom: 20px;
+    width: 100%;
 }
 
 .news-container {
     display: flex;
     flex-direction: column;
     gap: 30px;
+    width: 100%;
 }
 
 .news-item {
@@ -278,6 +293,7 @@ h4 {
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    width: 100%;
 }
 
 .news-item h3 {
@@ -313,6 +329,7 @@ footer {
     color: white;
     padding: 1.5rem;
     margin-top: 2rem;
+    width: 100%;
 }
 
 footer .footer-wrapper {
@@ -321,6 +338,7 @@ footer .footer-wrapper {
     padding: 1.5rem;
     max-width: 1200px;
     margin: 0 auto;
+    width: 100%;
 }
 
 footer .footer-left, footer .footer-right {
@@ -347,11 +365,13 @@ footer .footer-right p {
     color: white;
     padding: 1rem;
     text-align: center;
+    width: 100%;
 }
 
 /* Social Links */
 .social-links {
     margin-top: 1rem;
+    width: 100%;
 }
 
 .social-links a {
@@ -370,43 +390,50 @@ footer .footer-right p {
         padding: 1rem;
     }
 
-    /* Hide desktop menu */
     nav ul.desktop-menu {
         display: none;
     }
 
-    /* Show hamburger */
     #hamburger {
         display: block;
     }
 
-    /* Mobile menu styles */
     nav ul.mobile-menu {
         display: none;
         flex-direction: column;
+        width: 100%;
     }
 
     nav ul.mobile-menu.active {
         display: flex;
     }
 
-    /* Main content adjustments */
     .main-container {
         flex-direction: column;
         padding: 1rem;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
     }
 
     .left, .right {
         width: 100%;
         margin-bottom: 1.5rem;
+        padding: 0;
     }
 
-    /* Footer adjustments */
+    .full-width {
+        width: 100%;
+        padding: 15px;
+        margin: 0;
+    }
+
     footer .footer-wrapper {
         flex-direction: column;
         align-items: center;
         text-align: center;
         padding: 1rem;
+        width: 100%;
     }
 
     footer .footer-left, footer .footer-right {
@@ -417,15 +444,25 @@ footer .footer-right p {
     .social-links {
         text-align: center;
         margin: 1rem 0;
+        width: 100%;
     }
 
     .social-links a {
         margin: 0 0.5rem;
     }
 
-    /* Business hours table adjustment */
     .business-hours {
+        width: 100%;
         overflow-x: auto;
+    }
+
+    .business-hours table {
+        width: 100%;
+    }
+
+    .banner {
+        margin-top: 70px;
+        width: 100%;
     }
 }
 
