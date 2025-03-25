@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Use exact timestamp from your system
-    const CURRENT_TIMESTAMP = '2025-03-25 19:53:08';
+    // Constants
+    const CURRENT_TIMESTAMP = '2025-03-25 20:02:33';
     
+    // Business hours definition (in 24-hour format)
     const businessHours = {
         monday: { open: '09:00', close: '17:00', closed: false },
         tuesday: { open: '09:00', close: '17:00', closed: false },
@@ -12,54 +13,55 @@ document.addEventListener('DOMContentLoaded', function() {
         sunday: { closed: true }
     };
 
-    function initBusinessHours() {
-        // Set timezone first
-        const userTimeZone = document.getElementById('userTimeZone');
-        if (userTimeZone) {
-            userTimeZone.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        }
+    // Days mapping
+    const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-        // Update current time
-        const currentTime = document.getElementById('currentTime');
-        if (currentTime) {
+    function updateDateTime() {
+        const currentTimeElement = document.getElementById('currentTime');
+        const userTimeZoneElement = document.getElementById('userTimeZone');
+        
+        if (currentTimeElement) {
             const now = new Date(CURRENT_TIMESTAMP);
-            currentTime.textContent = now.toLocaleString('en-US', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
+            currentTimeElement.textContent = now.toLocaleString('en-US', {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
                 hour12: true
             });
         }
 
-        // Populate hours table
-        const hoursTable = document.getElementById('hoursTable');
-        if (hoursTable) {
-            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-            const now = new Date(CURRENT_TIMESTAMP);
-            const today = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
-
-            hoursTable.innerHTML = days.map(day => {
-                const dayInfo = businessHours[day];
-                const isToday = day === today;
-                return `
-                    <tr ${isToday ? 'class="today"' : ''}>
-                        <td>${day.charAt(0).toUpperCase() + day.slice(1)}</td>
-                        <td>${dayInfo.closed ? 'Closed' : `${formatTime(dayInfo.open)} - ${formatTime(dayInfo.close)}`}</td>
-                    </tr>
-                `;
-            }).join('');
+        if (userTimeZoneElement) {
+            userTimeZoneElement.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
         }
+    }
 
-        updateStatus();
+    function updateBusinessHours() {
+        const hoursTable = document.getElementById('hoursTable');
+        if (!hoursTable) return;
+
+        const now = new Date(CURRENT_TIMESTAMP);
+        const todayIndex = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+        hoursTable.innerHTML = DAYS.map((day, index) => {
+            const dayInfo = businessHours[day];
+            const isToday = index === todayIndex;
+            
+            return `
+                <tr${isToday ? ' class="today"' : ''}>
+                    <td>${day.charAt(0).toUpperCase() + day.slice(1)}</td>
+                    <td>${dayInfo.closed ? 'Closed' : `${formatTime(dayInfo.open)} - ${formatTime(dayInfo.close)}`}</td>
+                </tr>
+            `;
+        }).join('');
     }
 
     function updateStatus() {
         const now = new Date(CURRENT_TIMESTAMP);
-        const currentDay = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
-        const currentHours = businessHours[currentDay];
+        const currentDay = DAYS[now.getDay()];
+        const dayInfo = businessHours[currentDay];
         
         const statusIndicator = document.getElementById('currentStatus');
         const statusText = document.getElementById('openClosedText');
@@ -67,66 +69,78 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!statusIndicator || !statusText || !nextChange) return;
 
-        const currentTime = now.getHours() * 100 + now.getMinutes();
-        
-        if (currentHours.closed) {
-            setClosedStatus(statusIndicator, statusText, nextChange);
+        if (dayInfo.closed) {
+            displayClosedStatus(statusIndicator, statusText, nextChange);
+            return;
+        }
+
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const [openHour, openMinute] = dayInfo.open.split(':').map(Number);
+        const [closeHour, closeMinute] = dayInfo.close.split(':').map(Number);
+
+        const currentTime = currentHour * 60 + currentMinute;
+        const openTime = openHour * 60 + openMinute;
+        const closeTime = closeHour * 60 + closeMinute;
+
+        if (currentTime >= openTime && currentTime < closeTime) {
+            displayOpenStatus(statusIndicator, statusText, nextChange, dayInfo.close);
         } else {
-            const openTime = parseInt(currentHours.open.split(':').join(''));
-            const closeTime = parseInt(currentHours.close.split(':').join(''));
-            
-            if (currentTime >= openTime && currentTime < closeTime) {
-                setOpenStatus(statusIndicator, statusText, nextChange, currentHours.close);
-            } else {
-                setClosedStatus(statusIndicator, statusText, nextChange);
-            }
+            displayClosedStatus(statusIndicator, statusText, nextChange);
         }
     }
 
-    function setOpenStatus(indicator, text, nextChange, closeTime) {
-        indicator.classList.remove('closed');
-        indicator.classList.add('open');
+    function displayOpenStatus(indicator, text, nextChange, closeTime) {
+        indicator.className = 'status-indicator open';
         text.textContent = 'OPEN';
         nextChange.textContent = `Closes at ${formatTime(closeTime)}`;
     }
 
-    function setClosedStatus(indicator, text, nextChange) {
-        indicator.classList.remove('open');
-        indicator.classList.add('closed');
+    function displayClosedStatus(indicator, text, nextChange) {
+        indicator.className = 'status-indicator closed';
         text.textContent = 'CLOSED';
-        nextChange.textContent = `Opens next business day at ${formatTime(getNextOpeningTime())}`;
+        const nextOpenTime = getNextOpenTime();
+        nextChange.textContent = `Opens ${nextOpenTime}`;
     }
 
-    function formatTime(time) {
-        const [hours, minutes] = time.split(':');
-        const date = new Date();
-        date.setHours(parseInt(hours), parseInt(minutes));
-        return date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
+    function getNextOpenTime() {
+        const now = new Date(CURRENT_TIMESTAMP);
+        let currentDayIndex = now.getDay();
+        let daysChecked = 0;
+        
+        while (daysChecked < 7) {
+            currentDayIndex = (currentDayIndex + 1) % 7;
+            const nextDay = DAYS[currentDayIndex];
+            
+            if (!businessHours[nextDay].closed) {
+                return `${nextDay.charAt(0).toUpperCase() + nextDay.slice(1)} at ${formatTime(businessHours[nextDay].open)}`;
+            }
+            daysChecked++;
+        }
+        return 'soon';
+    }
+
+    function formatTime(timeStr) {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return new Date(2025, 2, 25, hours, minutes).toLocaleTimeString('en-US', {
+            hour: 'numeric',
             minute: '2-digit',
             hour12: true
         });
     }
 
-    function getNextOpeningTime() {
-        const now = new Date(CURRENT_TIMESTAMP);
-        const currentDay = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
-        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        let nextDay = days[(days.indexOf(currentDay) + 1) % 7];
-        
-        while (businessHours[nextDay].closed) {
-            nextDay = days[(days.indexOf(nextDay) + 1) % 7];
-        }
-        
-        return businessHours[nextDay].open;
+    // Initialize everything
+    function init() {
+        updateDateTime();
+        updateBusinessHours();
+        updateStatus();
     }
 
-    // Initialize business hours
-    if (document.querySelector('.business-hours')) {
-        initBusinessHours();
-        setInterval(initBusinessHours, 60000); // Update every minute
-    }
-});
+    // Initial load
+    init();
+
+    // Update every minute
+    setInterval(init, 60000);
 
     // Booking system functionality
     const bookingButton = document.getElementById('bookingButton');
