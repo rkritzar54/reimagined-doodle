@@ -1,12 +1,13 @@
+// JavaScript to toggle the mobile menu
 const hamburger = document.getElementById('hamburger');
-const mobileMenu = document.querySelector('nav ul.mobile-menu');
+const mobileMenu = document.querySelector('.mobile-menu');
 
-// Toggle mobile menu open/close
+// Toggle the mobile menu when the hamburger is clicked
 hamburger.addEventListener('click', () => {
     mobileMenu.classList.toggle('active');
 });
 
-// Close mobile menu when clicking outside
+// Close the mobile menu when clicking outside the menu or hamburger
 window.addEventListener('click', (event) => {
     if (!hamburger.contains(event.target) && !mobileMenu.contains(event.target)) {
         mobileMenu.classList.remove('active');
