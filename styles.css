@@ -224,7 +224,7 @@ footer .footer-right p {
     }
 
     /* Show hamburger menu on small screens */
-    .hamburger {
+    #hamburger {
         display: flex;
         cursor: pointer;
         z-index: 10;
@@ -237,9 +237,9 @@ footer .footer-right p {
         margin: 5px 0;
     }
 
-    /* Show mobile menu when active */
+    /* Mobile Menu Styles */
     nav ul.mobile-menu {
-        display: flex;
+        display: none;
         flex-direction: column;
         width: 100%;
         background-color: #fff;
@@ -249,7 +249,6 @@ footer .footer-right p {
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         padding: 0;
         margin: 0;
-        display: none; /* Hidden by default */
     }
 
     nav ul.mobile-menu.active {
@@ -290,4 +289,3 @@ footer .footer-right p {
         width: 100%;
     }
 }
-
