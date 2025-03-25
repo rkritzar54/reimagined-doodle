@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const CURRENT_TIMESTAMP = '2025-03-25 21:24:18';
+    const CURRENT_TIMESTAMP = '2025-03-25 21:31:33';
     const CURRENT_USER = 'rkritzar54';
 
     // Set admin status
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('todayBookings').textContent = 
             bookings.filter(b => new Date(b.submissionTime).toDateString() === today).length;
 
-        // Update business status based on current hours
+        // Update business status
         updateBusinessStatus();
         updateActivityLog(bookings);
     }
@@ -60,73 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
         `).join('');
 
         activityLog.innerHTML = activityHTML || '<p>No recent activity</p>';
-    }
-
-    function loadBusinessHours() {
-        const form = document.getElementById('businessHoursForm');
-        if (!form) return;
-
-        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        const hoursGrid = form.querySelector('.hours-grid');
-        
-        // Clear existing content
-        hoursGrid.innerHTML = '';
-
-        // Get current business hours
-        const businessHours = JSON.parse(localStorage.getItem('businessHours')) || {
-            sunday: { closed: true },
-            monday: { open: '10:00', close: '23:00', closed: false },
-            tuesday: { open: '10:00', close: '23:00', closed: false },
-            wednesday: { open: '10:00', close: '23:00', closed: false },
-            thursday: { open: '10:00', close: '23:00', closed: false },
-            friday: { open: '10:00', close: '23:00', closed: false },
-            saturday: { open: '10:00', close: '23:00', closed: false }
-        };
-
-        // Create inputs for each day
-        days.forEach(day => {
-            const daySettings = businessHours[day];
-            hoursGrid.innerHTML += `
-                <div class="day-settings">
-                    <h3>${capitalize(day)}</h3>
-                    <div class="time-inputs">
-                        <label>
-                            <input type="checkbox" name="${day}-open" 
-                                ${!daySettings.closed ? 'checked' : ''}>
-                            Open
-                        </label>
-                        <input type="time" name="${day}-start" 
-                            value="${daySettings.open || '10:00'}"
-                            ${daySettings.closed ? 'disabled' : ''}>
-                        <span>to</span>
-                        <input type="time" name="${day}-end" 
-                            value="${daySettings.close || '23:00'}"
-                            ${daySettings.closed ? 'disabled' : ''}>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    function loadSettings() {
-        const form = document.getElementById('settingsForm');
-        if (!form) return;
-
-        const settings = JSON.parse(localStorage.getItem('businessSettings')) || {
-            businessName: "River's Portfolio",
-            contactEmail: "",
-            contactPhone: "",
-            bookingSettings: {
-                minNotice: 24,
-                maxFuture: 30
-            }
-        };
-
-        form.querySelector('[name="businessName"]').value = settings.businessName;
-        form.querySelector('[name="contactEmail"]').value = settings.contactEmail;
-        form.querySelector('[name="contactPhone"]').value = settings.contactPhone;
-        form.querySelector('[name="minNotice"]').value = settings.bookingSettings.minNotice;
-        form.querySelector('[name="maxFuture"]').value = settings.bookingSettings.maxFuture;
     }
 
     function setupEventListeners() {
@@ -185,6 +118,32 @@ document.addEventListener('DOMContentLoaded', function() {
         alert('Business hours updated successfully!');
     }
 
+    function loadBusinessHours() {
+        const businessHours = JSON.parse(localStorage.getItem('businessHours')) || {
+            sunday: { closed: true },
+            monday: { open: '10:00', close: '23:00', closed: false },
+            tuesday: { open: '10:00', close: '23:00', closed: false },
+            wednesday: { open: '10:00', close: '23:00', closed: false },
+            thursday: { open: '10:00', close: '23:00', closed: false },
+            friday: { open: '10:00', close: '23:00', closed: false },
+            saturday: { open: '10:00', close: '23:00', closed: false }
+        };
+
+        Object.entries(businessHours).forEach(([day, hours]) => {
+            const openCheckbox = document.querySelector(`[name="${day}-open"]`);
+            const startInput = document.querySelector(`[name="${day}-start"]`);
+            const endInput = document.querySelector(`[name="${day}-end"]`);
+
+            if (openCheckbox && startInput && endInput) {
+                openCheckbox.checked = !hours.closed;
+                startInput.value = hours.open;
+                endInput.value = hours.close;
+                startInput.disabled = hours.closed;
+                endInput.disabled = hours.closed;
+            }
+        });
+    }
+
     function saveSettings(e) {
         e.preventDefault();
         const settings = {
@@ -199,6 +158,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
         localStorage.setItem('businessSettings', JSON.stringify(settings));
         alert('Settings saved successfully!');
+    }
+
+    function loadSettings() {
+        const settings = JSON.parse(localStorage.getItem('businessSettings')) || {
+            businessName: "River's Portfolio",
+            contactEmail: "",
+            contactPhone: "",
+            bookingSettings: {
+                minNotice: 24,
+                maxFuture: 30
+            }
+        };
+
+        const form = document.getElementById('settingsForm');
+        if (form) {
+            form.querySelector('[name="businessName"]').value = settings.businessName;
+            form.querySelector('[name="contactEmail"]').value = settings.contactEmail;
+            form.querySelector('[name="contactPhone"]').value = settings.contactPhone;
+            form.querySelector('[name="minNotice"]').value = settings.bookingSettings.minNotice;
+            form.querySelector('[name="maxFuture"]').value = settings.bookingSettings.maxFuture;
+        }
     }
 
     function filterBookings() {
@@ -225,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!bookingsList) return;
 
         const bookingsHTML = bookings.map(booking => `
-            <div class="booking-card" data-id="${booking.id}">
+            <div class="booking-card">
                 <div class="booking-header">
                     <h3>${booking.name}</h3>
                     <span class="status ${booking.status}">${booking.status}</span>
@@ -253,7 +233,21 @@ document.addEventListener('DOMContentLoaded', function() {
         bookingsList.innerHTML = bookingsHTML || '<p>No bookings found</p>';
     }
 
-    // Helper functions
+    function updateBusinessStatus() {
+        const businessHours = JSON.parse(localStorage.getItem('businessHours'));
+        if (!businessHours) return;
+
+        const now = new Date(CURRENT_TIMESTAMP);
+        const currentDay = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+        const status = document.getElementById('businessStatus');
+
+        if (status) {
+            const isOpen = !businessHours[currentDay].closed;
+            status.textContent = isOpen ? 'OPEN' : 'CLOSED';
+            status.className = `status-indicator ${isOpen ? 'open' : 'closed'}`;
+        }
+    }
+
     function switchTab(tabId) {
         document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.admin-sidebar li').forEach(tab => tab.classList.remove('active'));
@@ -273,10 +267,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
         if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
         return `${Math.floor(seconds / 86400)} days ago`;
-    }
-
-    function capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
     // Make these functions available globally
