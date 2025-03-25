@@ -109,9 +109,13 @@ h2 {
 
 /* Quick Links */
 .quick-links ul {
-    list-style: none; /* Remove bullets from the unordered list */
-    padding: 0; /* Remove any padding */
-    margin: 0; /* Remove any margin */
+    list-style: none; /* Remove bullets */
+    padding: 0; /* Remove padding around the list */
+    margin: 0; /* Remove margin around the list */
+}
+
+.quick-links li {
+    margin-bottom: 10px; /* Add space between the list items */
 }
 
 .quick-links a {
@@ -121,7 +125,6 @@ h2 {
     text-align: center;
     padding: 0.75rem;
     border-radius: 5px;
-    margin-top: 10px;
     text-decoration: none;
     font-weight: bold;
 }
