@@ -411,15 +411,67 @@
     }
 });
 
-// Wait for the DOM to be fully loaded
+
+// Wait for DOM to be loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Hamburger Menu Functionality
+    // Navigation functionality
     const hamburger = document.getElementById('hamburger');
     const mobileMenu = document.querySelector('.mobile-menu');
-    
+    const dropdowns = document.querySelectorAll('.dropdown');
+
+    // Hamburger menu toggle
     if (hamburger && mobileMenu) {
         hamburger.addEventListener('click', function() {
-            this.classList.toggle('active');
+            hamburger.classList.toggle('active');
             mobileMenu.classList.toggle('active');
         });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // Close mobile menu when clicking a link
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            });
+        });
     }
+
+    // Desktop dropdown functionality
+    dropdowns.forEach(dropdown => {
+        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
+        
+        // Show dropdown on hover for desktop
+        if (window.innerWidth > 768) {
+            dropdown.addEventListener('mouseenter', () => {
+                dropdownMenu.style.display = 'block';
+            });
+            
+            dropdown.addEventListener('mouseleave', () => {
+                dropdownMenu.style.display = 'none';
+            });
+        }
+        
+        // Handle dropdown toggle on click for mobile
+        dropdown.querySelector('a').addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                dropdownMenu.style.display = 
+                    dropdownMenu.style.display === 'block' ? 'none' : 'block';
+            }
+        });
+    });
+
+    // Update active state in navigation
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    document.querySelectorAll('nav a').forEach(link => {
+        if (link.getAttribute('href') === currentPage) {
+            link.classList.add('active');
+        }
+    });
