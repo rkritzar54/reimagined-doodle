@@ -6,7 +6,7 @@
     border-bottom: 2px solid #eee;
     padding-bottom: 10px;
     margin-bottom: 15px;
-    color: #343a40;
+    color: #003366; /* Dark Blue Heading */
 }
 
 .news-article-container {
@@ -24,7 +24,7 @@
 .article-title h3 {
     margin-top: 0;
     margin-bottom: 5px;
-    color: #343a40;
+    color: #003366; /* Dark Blue Heading */
 }
 
 .article-meta {
@@ -135,7 +135,7 @@
 .modal-content h2 {
     margin-top: 0;
     margin-bottom: 15px;
-    color: #343a40;
+    color: #003366; /* Dark Blue Heading */
     border-bottom: 2px solid #eee;
     padding-bottom: 10px;
 }
@@ -154,7 +154,7 @@
 .modal-content h3 {
     margin-top: 20px;
     margin-bottom: 10px;
-    color: #343a40;
+    color: #003366; /* Dark Blue Heading */
 }
 
 .modal-content ul {
