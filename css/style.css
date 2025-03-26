@@ -221,6 +221,19 @@ h3 {
     background: #004494;
 }
 
+.hamburger-menu {
+    display: none;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.hamburger-menu span {
+    width: 25px;
+    height: 3px;
+    background: #333;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .content-columns {
@@ -233,5 +246,24 @@ h3 {
 
     .footer-left {
         margin-right: 0;
+    }
+
+    .hamburger-menu {
+        display: flex;
+    }
+
+    .main-nav ul {
+        display: none;
+        flex-direction: column;
+        background: #fff;
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 100%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .main-nav ul.show {
+        display: flex;
     }
 }
