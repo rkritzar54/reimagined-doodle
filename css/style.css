@@ -46,6 +46,32 @@ body {
     border-radius: 50%;
 }
 
+/* Time Display */
+.time-display {
+    position: fixed;
+    top: 0;
+    right: 0;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 20px;
+    z-index: 1000;
+    font-family: 'Courier New', monospace;
+    line-height: 1.4;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    text-align: right;
+    width: auto;
+    white-space: nowrap;
+}
+
+.time-display .current-time {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.time-display .current-user {
+    font-size: 14px;
+}
+
 /* Navigation Styles */
 .main-nav {
     margin-top: 1rem;
@@ -84,6 +110,7 @@ body {
     border-radius: 4px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     z-index: 1000;
+    min-width: 200px;
 }
 
 .dropdown:hover .dropdown-menu {
@@ -133,6 +160,7 @@ body {
 
 .footer-left h3, .footer-right h3 {
     margin-bottom: 1rem;
+    color: white;
 }
 
 .social-links {
@@ -155,55 +183,7 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Time Display */
-.time-display {
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 10px 15px;
-    position: fixed;
-    top: 0;
-    right: 0;
-    font-size: 14px;
-    z-index: 1000;
-    font-family: monospace;
-    border-bottom-left-radius: 5px;
-}
-
-.time-display .current-time {
-    margin-bottom: 5px;
-}
-
-.time-display .current-user {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
-/* Active States */
-.active, .active-dropdown > a {
-    background-color: var(--secondary-color);
-}
-
-/* Notification Styles */
-.notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: var(--success-color);
-    color: white;
-    padding: 1rem 2rem;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transform: translateY(100px);
-    opacity: 0;
-    transition: all 0.3s ease;
-}
-
-.notification.show {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-/* News Styles */
+/* News Article Styles */
 .news-article {
     background: white;
     border-radius: 8px;
@@ -236,7 +216,6 @@ body {
     border-radius: 15px;
     padding: 5px 12px;
     font-size: 0.85em;
-    color: var(--text-color);
 }
 
 /* About Page Styles */
@@ -259,7 +238,6 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 20px;
-    margin-top: 20px;
 }
 
 .hours-table {
@@ -271,6 +249,7 @@ body {
 .hours-table th,
 .hours-table td {
     padding: 10px;
+    text-align: left;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -297,6 +276,38 @@ body {
     color: white;
 }
 
+/* Active States */
+.active, .active-dropdown > a {
+    background-color: var(--secondary-color);
+}
+
+/* Notification */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--success-color);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Last Updated Text */
+.last-updated {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 1rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .main-nav ul {
@@ -305,12 +316,7 @@ body {
 
     .dropdown-menu {
         position: static;
-        display: none;
         width: 100%;
-    }
-
-    .dropdown:hover .dropdown-menu {
-        display: block;
     }
 
     .footer-columns {
@@ -323,20 +329,16 @@ body {
     }
 
     .time-display {
+        width: 100%;
+        padding: 10px 15px;
         font-size: 12px;
-        padding: 8px 12px;
+    }
+
+    .time-display .current-time,
+    .time-display .current-user {
+        font-size: 12px;
     }
 }
-
-/* Additional Utility Classes */
-.text-center {
-    text-align: center;
-}
-
-.mt-1 { margin-top: 1rem; }
-.mt-2 { margin-top: 2rem; }
-.mb-1 { margin-bottom: 1rem; }
-.mb-2 { margin-bottom: 2rem; }
 
 /* Button Styles */
 .btn {
@@ -368,6 +370,16 @@ body {
     opacity: 0.9;
 }
 
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.mt-1 { margin-top: 1rem; }
+.mt-2 { margin-top: 2rem; }
+.mb-1 { margin-bottom: 1rem; }
+.mb-2 { margin-bottom: 2rem; }
+
 /* Form Styles */
 .form-group {
     margin-bottom: 1rem;
@@ -391,17 +403,22 @@ body {
     border-color: var(--secondary-color);
 }
 
-/* Last Updated Text */
-.last-updated {
-    color: #666;
-    font-size: 0.9em;
-    margin-bottom: 1rem;
-}
-
 /* No Content Message */
 .no-content {
     text-align: center;
     padding: 2rem;
     color: #666;
     font-style: italic;
+}
+
+/* Section Headers */
+section h1 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* News Container */
+.news-container {
+    max-width: 800px;
+    margin: 0 auto;
 }
