@@ -24,13 +24,16 @@ document.addEventListener('DOMContentLoaded', function() {
             loadNewsContent(pageName);
             break;
     }
+
+    // Update footer content
+    updateFooterContent();
 });
 
 // Get current page name from URL
 function getPageName() {
     const path = window.location.pathname;
     const page = path.split('/').pop().replace('.html', '');
-    return page;
+    return page || 'index'; // Default to index if no page name
 }
 
 // Load site settings
@@ -38,14 +41,56 @@ function loadSiteSettings() {
     const settings = contentStorage.get('site-settings');
     if (settings) {
         // Update site title
-        document.title = settings.siteTitle + ' - ' + document.title.split(' - ')[1];
-        
-        // Update footer information
-        const footerAddress = document.querySelector('.footer-left p:first-of-type');
-        const footerPhone = document.querySelector('.footer-left p:last-of-type');
-        
-        if (footerAddress) footerAddress.textContent = `Address: ${settings.address}`;
-        if (footerPhone) footerPhone.textContent = `Phone: ${settings.phoneNumber}`;
+        if (settings.siteTitle) {
+            const currentTitle = document.title;
+            const pageName = currentTitle.includes(' - ') ? currentTitle.split(' - ')[1] : currentTitle;
+            document.title = `${settings.siteTitle} - ${pageName}`;
+        }
+
+        // Update theme color if set
+        if (settings.themeColor) {
+            document.documentElement.style.setProperty('--primary-color', settings.themeColor);
+        }
+    }
+}
+
+// Update footer content
+function updateFooterContent() {
+    const settings = contentStorage.get('site-settings');
+    if (settings) {
+        // Update site title in footer
+        const footerTitle = document.getElementById('footer-title');
+        const copyrightTitle = document.getElementById('footer-copyright-title');
+        if (footerTitle && settings.siteTitle) footerTitle.textContent = settings.siteTitle;
+        if (copyrightTitle && settings.siteTitle) copyrightTitle.textContent = settings.siteTitle;
+
+        // Update contact information
+        const footerAddress = document.getElementById('footer-address');
+        const footerPhone = document.getElementById('footer-phone');
+        if (footerAddress && settings.address) footerAddress.textContent = `Address: ${settings.address}`;
+        if (footerPhone && settings.phone) footerPhone.textContent = `Phone: ${settings.phone}`;
+
+        // Update social media links
+        if (settings.socialMedia) {
+            const socialLinks = {
+                facebook: document.getElementById('footer-facebook'),
+                twitter: document.getElementById('footer-twitter'),
+                linkedin: document.getElementById('footer-linkedin')
+            };
+
+            Object.entries(socialLinks).forEach(([platform, element]) => {
+                if (element && settings.socialMedia[platform]) {
+                    element.href = settings.socialMedia[platform];
+                    element.style.display = settings.socialMedia[platform] ? 'inline' : 'none';
+                }
+            });
+        }
+    }
+
+    // Update copyright year
+    const yearElement = document.getElementById('current-year');
+    if (yearElement) {
+        yearElement.textContent = new Date().getFullYear();
     }
 }
 
@@ -53,15 +98,16 @@ function loadSiteSettings() {
 function loadAboutContent() {
     const aboutContent = contentStorage.get('about-content');
     if (aboutContent) {
-        const contentContainer = document.querySelector('.about-page');
+        const contentContainer = document.querySelector('.about-content');
         if (contentContainer) {
-            // Preserve the heading
+            // Preserve the heading if it exists
             const heading = contentContainer.querySelector('h1');
             contentContainer.innerHTML = '';
             if (heading) contentContainer.appendChild(heading);
             
             // Add the content
             const content = document.createElement('div');
+            content.className = 'about-text';
             content.innerHTML = aboutContent;
             contentContainer.appendChild(content);
         }
@@ -74,10 +120,12 @@ function loadBusinessHours() {
     if (hours) {
         const tableBody = document.getElementById('hours-table-body');
         if (tableBody) {
+            const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][new Date().getDay()];
+            
             tableBody.innerHTML = Object.entries(hours).map(([day, times]) => `
-                <tr class="${isCurrentDay(day) ? 'current-day' : ''}">
+                <tr class="${day === currentDay ? 'current-day' : ''}">
                     <td>${day}</td>
-                    <td>${times.closed ? 'Closed' : `${times.open} - ${times.close}`}</td>
+                    <td>${times.closed ? 'Closed' : `${formatTime(times.open)} - ${formatTime(times.close)}`}</td>
                 </tr>
             `).join('');
         }
@@ -87,79 +135,71 @@ function loadBusinessHours() {
     }
 }
 
-// Check if day is current day
-function isCurrentDay(day) {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return days[new Date().getDay()] === day;
-}
-
-// Update business status
-function updateBusinessStatus(hours) {
-    const statusElement = document.getElementById('businessStatus');
-    const opensAtElement = document.getElementById('opensAt');
-    
-    if (statusElement && opensAtElement) {
-        const now = new Date();
-        const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
-        const currentHours = hours[currentDay];
-        
-        if (currentHours.closed) {
-            statusElement.textContent = 'Closed';
-            statusElement.className = 'closed';
-            
-            // Find next open day
-            let nextOpenDay = getNextOpenDay(hours, currentDay);
-            if (nextOpenDay) {
-                opensAtElement.textContent = `${nextOpenDay} at ${hours[nextOpenDay].open}`;
-            }
-        } else {
-            const isOpen = isBusinessOpen(currentHours);
-            statusElement.textContent = isOpen ? 'Open' : 'Closed';
-            statusElement.className = isOpen ? 'open' : 'closed';
-            
-            if (!isOpen) {
-                opensAtElement.textContent = currentHours.open;
-            }
-        }
-    }
+// Format time to 12-hour format
+function formatTime(time) {
+    if (!time) return '';
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
 }
 
 // Load news content
 function loadNewsContent(section) {
-    const articles = contentStorage.get(`${section}-articles`);
-    if (articles) {
-        const container = document.querySelector('.news-article-container');
-        if (container) {
-            container.innerHTML = articles.map(article => `
-                <article class="news-article">
-                    <div class="article-title">
-                        <h3>${article.title}</h3>
-                    </div>
-                    <div class="article-meta">
-                        Posted on ${new Date(article.date).toLocaleDateString()}
-                    </div>
-                    ${article.image ? `<img src="${article.image}" alt="${article.title}" class="article-image">` : ''}
-                    <div class="article-excerpt">
-                        <p>${article.content}</p>
-                    </div>
-                    ${article.category ? `
-                        <div class="article-categories">
-                            <span class="category-bubble">${article.category}</span>
-                        </div>
-                    ` : ''}
-                </article>
-            `).join('');
-            
-            // Update last updated timestamp
-            const lastUpdated = document.getElementById(`${section}LastUpdated`);
-            if (lastUpdated) {
-                lastUpdated.textContent = new Date().toLocaleString();
-            }
-        }
+    const articles = contentStorage.get(`${section}`) || [];
+    const container = document.querySelector('.news-container');
+    if (container && articles.length > 0) {
+        container.innerHTML = articles.map(article => `
+            <article class="news-article">
+                <h3>${article.title}</h3>
+                <div class="article-meta">
+                    <span class="date">Posted on ${new Date(article.date).toLocaleDateString()}</span>
+                    ${article.category ? `<span class="category">${article.category}</span>` : ''}
+                </div>
+                <div class="article-content">
+                    <p>${article.content}</p>
+                </div>
+            </article>
+        `).join('');
+    } else if (container) {
+        container.innerHTML = '<p class="no-articles">No articles available.</p>';
     }
 }
 
-// Helper function to check if business is currently open
+// Update business status
+function updateBusinessStatus(hours) {
+    const statusElement = document.getElementById('business-status');
+    const opensAtElement = document.getElementById('opens-at');
+    
+    if (!statusElement || !opensAtElement) return;
+
+    const now = new Date();
+    const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
+    const todayHours = hours[currentDay];
+
+    if (todayHours.closed) {
+        setStatus('Closed', false);
+        const nextOpenDay = getNextOpenDay(hours, currentDay);
+        if (nextOpenDay) {
+            opensAtElement.textContent = `Opens ${nextOpenDay} at ${formatTime(hours[nextOpenDay].open)}`;
+        }
+    } else {
+        const isOpen = isBusinessOpen(todayHours);
+        setStatus(isOpen ? 'Open' : 'Closed', isOpen);
+        if (!isOpen) {
+            opensAtElement.textContent = `Opens today at ${formatTime(todayHours.open)}`;
+        } else {
+            opensAtElement.textContent = `Closes at ${formatTime(todayHours.close)}`;
+        }
+    }
+
+    function setStatus(text, isOpen) {
+        statusElement.textContent = text;
+        statusElement.className = isOpen ? 'open' : 'closed';
+    }
+}
+
+// Check if business is currently open
 function isBusinessOpen(hours) {
     if (hours.closed) return false;
     
@@ -172,12 +212,12 @@ function isBusinessOpen(hours) {
     const openTime = openHours * 100 + openMinutes;
     const closeTime = closeHours * 100 + closeMinutes;
     
-    return currentTime >= openTime && currentTime <= closeTime;
+    return currentTime >= openTime && currentTime < closeTime;
 }
 
-// Helper function to get next open day
+// Get next open day
 function getNextOpenDay(hours, currentDay) {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const currentIndex = days.indexOf(currentDay);
     
     for (let i = 1; i <= 7; i++) {
