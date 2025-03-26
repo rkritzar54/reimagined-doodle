@@ -755,7 +755,10 @@ function checkBusinessStatus() {
     const edtOffset = -4; // EDT is UTC-4
     const now = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
     const today = now.toISOString().split('T')[0];
-    
+
+    console.log("Current UTC Time:", utcDate.toISOString());
+    console.log("Current EDT Time:", now.toISOString());
+
     // Check if today is a holiday
     const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
     const holiday = settings.holidays.find(h => h.date === today);
@@ -773,7 +776,11 @@ function checkBusinessStatus() {
         if (closeMinutes < openMinutes) {
             closeMinutes += 24 * 60;
         }
-        
+
+        console.log(`Holiday - ${holiday.name}: Open at ${holiday.open}, Close at ${holiday.close}`);
+        console.log("Current Time in Minutes:", currentTime);
+        console.log("Open Minutes:", openMinutes, "Close Minutes:", closeMinutes);
+
         return currentTime >= openMinutes && currentTime < closeMinutes;
     }
 
@@ -794,25 +801,9 @@ function checkBusinessStatus() {
         closeMinutes += 24 * 60;
     }
 
-    return currentTime >= openMinutes && currentTime < closeMinutes;
-}
+    console.log(`Day - ${day}: Open at ${schedule.open}, Close at ${schedule.close}`);
+    console.log("Current Time in Minutes:", currentTime);
+    console.log("Open Minutes:", openMinutes, "Close Minutes:", closeMinutes);
 
-    // Regular business hours check
-    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
-    const schedule = hours[day];
-    
-    if (schedule.closed) return false;
-    
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-    const [openHour, openMin] = schedule.open.split(':').map(Number);
-    const [closeHour, closeMin] = schedule.close.split(':').map(Number);
-    
-    let openMinutes = openHour * 60 + openMin;
-    let closeMinutes = closeHour * 60 + closeMin;
-    
-    if (closeMinutes < openMinutes) {
-        closeMinutes += 24 * 60;
-    }
-    
     return currentTime >= openMinutes && currentTime < closeMinutes;
 }
