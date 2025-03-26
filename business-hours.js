@@ -59,10 +59,23 @@ function updateTimeDisplay() {
     const zoneElement = document.getElementById('userTimeZone');
     
     if (timeElement) {
-        timeElement.textContent = new Date(CURRENT_TIMESTAMP).toLocaleString();
+        // Convert to EDT for display
+        const utcDate = new Date(CURRENT_TIMESTAMP);
+        const edtOffset = 4 * 60; // EDT is UTC-4
+        const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 1000));
+        
+        timeElement.textContent = edtDate.toLocaleString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
     }
     if (zoneElement) {
-        zoneElement.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        zoneElement.textContent = 'EDT';
     }
 }
 
@@ -165,12 +178,13 @@ function convertEDTtoLocal(timeStr) {
     // Parse the input time
     const [hours, minutes] = timeStr.split(':').map(Number);
     
-    // Create a date object for today with the given EDT time
-    const today = new Date(CURRENT_TIMESTAMP);
-    const edtDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes);
+    // Create date object with the hours/minutes in EDT
+    const date = new Date(CURRENT_TIMESTAMP);
+    // Adjust for EDT (UTC-4)
+    date.setHours(hours + 4, minutes, 0, 0);
     
-    // Format the time
-    return edtDate.toLocaleTimeString('en-US', {
+    // Return the time in local timezone
+    return date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true
@@ -235,30 +249,32 @@ function updateBusinessStatus(hours) {
 }
 
 function checkIfOpen(hours) {
-    const now = new Date(CURRENT_TIMESTAMP);
+    // Create date object in EDT
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = 4 * 60; // EDT is UTC-4
+    const now = new Date(utcDate.getTime() + (edtOffset * 60 * 1000));
     const today = now.toISOString().split('T')[0];
     
-    // Check if today is a holiday
-    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
-    const holiday = settings.holidays.find(h => h.date === today);
+    // Get the day in EDT
+    const edtDay = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+    const schedule = hours[edtDay];
+
+    if (schedule.closed) return false;
+
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const [openHour, openMin] = schedule.open.split(':').map(Number);
+    const [closeHour, closeMin] = schedule.close.split(':').map(Number);
+
+    let openMinutes = openHour * 60 + openMin;
+    let closeMinutes = closeHour * 60 + closeMin;
     
-    if (holiday) {
-        if (holiday.closed) return false;
-        
-        const currentTime = now.getHours() * 60 + now.getMinutes();
-        const [openHour, openMin] = holiday.open.split(':').map(Number);
-        const [closeHour, closeMin] = holiday.close.split(':').map(Number);
-        
-        let openMinutes = openHour * 60 + openMin;
-        let closeMinutes = closeHour * 60 + closeMin;
-        
-        // Handle closing times past midnight
-        if (closeMinutes < openMinutes) {
-            closeMinutes += 24 * 60;
-        }
-        
-        return currentTime >= openMinutes && currentTime < closeMinutes;
+    // Handle closing times past midnight
+    if (closeMinutes < openMinutes) {
+        closeMinutes += 24 * 60;
     }
+
+    return currentTime >= openMinutes && currentTime < closeMinutes;
+}
 
     // Regular business hours check
     const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
