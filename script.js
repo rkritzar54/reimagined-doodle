@@ -1,29 +1,4 @@
-// Constants
-const CURRENT_TIMESTAMP = '2025-03-26 02:56:04';
-const CURRENT_USER = 'rkritzar54';
-
-// Wait for DOM to be loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Navigation functionality
-    const hamburger = document.getElementById('hamburger');
-    const mobileMenu = document.querySelector('.mobile-menu');
-
-    if (hamburger && mobileMenu) {
-        hamburger.addEventListener('click', function() {
-            this.classList.toggle('active');
-            mobileMenu.classList.toggle('active');
-        });
-
-        // Close mobile menu when clicking a link
-        mobileMenu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                mobileMenu.classList.remove('active');
-            });
-        });
-    }
-
-    // Modal functionality for articles
+// Modal functionality for articles
     const modal = document.getElementById('articleModal');
     if (modal) {
         const modalContent = modal.querySelector('.modal-content');
@@ -282,7 +257,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button class="modal-close">&times;</button>
                     `;
                     modal.style.display = 'block';
-                    modal.classList.add('active');
                     document.body.classList.add('modal-open');
                 }
             });
@@ -291,22 +265,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Close modal when clicking the close button or outside the modal
         modal.addEventListener('click', function(e) {
             if (e.target === modal || e.target.classList.contains('modal-close')) {
-                modal.classList.remove('active');
-                setTimeout(() => {
-                    modal.style.display = 'none';
-                    document.body.classList.remove('modal-open');
-                }, 300);
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
             }
         });
 
         // Close modal when pressing ESC key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && modal.style.display === 'block') {
-                modal.classList.remove('active');
-                setTimeout(() => {
-                    modal.style.display = 'none';
-                    document.body.classList.remove('modal-open');
-                }, 300);
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
             }
         });
 
@@ -317,138 +285,141 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Business Hours Functions
-    if (typeof businessHours !== 'undefined') {
-        updateBusinessStatus();
-        setInterval(updateBusinessStatus, 60000); // Update every minute
-    }
-
-    // Initialize booking system if present
-    initializeBookingSystem();
-});
-
-// Business Hours Functions
-function updateBusinessStatus() {
-    const now = new Date();
-    const currentDay = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
-    const currentHours = businessHours[currentDay];
-    
-    const statusIndicator = document.getElementById('currentStatus');
-    const nextChangeSpan = document.getElementById('nextChange');
-    
-    if (!statusIndicator || !nextChangeSpan) return;
-
-    if (currentHours.closed) {
-        statusIndicator.classList.remove('open');
-        statusIndicator.classList.add('closed');
-        nextChangeSpan.textContent = 'Next Open: ' + getNextOpenDay(currentDay);
-    } else {
-        const currentTime = now.getHours() * 100 + now.getMinutes();
-        const openTime = parseInt(currentHours.open.replace(':', ''));
-        const closeTime = parseInt(currentHours.close.replace(':', ''));
+    function updateBusinessStatus() {
+        const now = new Date();
+        const currentDay = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
+        const currentHours = businessHours[currentDay];
         
-        if (currentTime >= openTime && currentTime < closeTime) {
-            statusIndicator.classList.remove('closed');
-            statusIndicator.classList.add('open');
-            nextChangeSpan.textContent = 'Closes at ' + currentHours.close;
-        } else {
+        const statusIndicator = document.getElementById('currentStatus');
+        const nextChangeSpan = document.getElementById('nextChange');
+        
+        if (!statusIndicator || !nextChangeSpan) return;
+
+        if (currentHours.closed) {
             statusIndicator.classList.remove('open');
             statusIndicator.classList.add('closed');
-            nextChangeSpan.textContent = currentTime < openTime ? 
-                'Opens at ' + currentHours.open : 
-                'Next Open: ' + getNextOpenDay(currentDay);
-        }
-    }
-
-    // Update current time display
-    const timeDisplay = document.getElementById('currentTime');
-    if (timeDisplay) {
-        timeDisplay.textContent = CURRENT_TIMESTAMP;
-    }
-}
-
-function getNextOpenDay(currentDay) {
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-    let currentIndex = days.indexOf(currentDay);
-    let daysChecked = 0;
-    
-    while (daysChecked < 7) {
-        currentIndex = (currentIndex + 1) % 7;
-        if (!businessHours[days[currentIndex]].closed) {
-            return days[currentIndex].charAt(0).toUpperCase() + 
-                   days[currentIndex].slice(1) + 
-                   ' at ' + 
-                   businessHours[days[currentIndex]].open;
-        }
-        daysChecked++;
-    }
-    return 'Check back later';
-}
-
-// Booking system initialization
-function initializeBookingSystem() {
-    const bookingButton = document.getElementById('bookingButton');
-    const bookingModal = document.getElementById('bookingModal');
-    
-    if (!bookingButton || !bookingModal) return;
-
-    const closeModal = bookingModal.querySelector('.modal-close');
-
-    bookingButton.addEventListener('click', function(e) {
-        e.preventDefault();
-        bookingModal.style.display = 'block';
-        document.body.classList.add('modal-open');
-        populateTimeSlots();
-    });
-
-    if (closeModal) {
-        closeModal.addEventListener('click', function() {
-            bookingModal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-        });
-    }
-
-    window.addEventListener('click', function(e) {
-        if (e.target === bookingModal) {
-            bookingModal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-        }
-    });
-
-    // Booking form submission
-    const bookingForm = document.getElementById('bookingForm');
-    if (bookingForm) {
-        bookingForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            alert('Booking submitted successfully!');
-            bookingModal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-        });
-    }
-}
-
-function populateTimeSlots() {
-    const timeSelect = document.getElementById('time');
-    const dateInput = document.getElementById('date');
-    
-    if (!timeSelect || !dateInput) return;
-
-    dateInput.addEventListener('change', function() {
-        const selectedDate = new Date(this.value);
-        const day = selectedDate.toLocaleDateString('en-US', { weekday: 'lowercase' });
-        const hours = businessHours[day];
-        
-        timeSelect.innerHTML = '<option value="">Select a time</option>';
-        
-        if (!hours.closed) {
-            const start = parseInt(hours.open.split(':')[0]);
-            const end = parseInt(hours.close.split(':')[0]);
+            nextChangeSpan.textContent = 'Next Open: ' + getNextOpenDay(currentDay);
+        } else {
+            const currentTime = now.getHours() * 100 + now.getMinutes();
+            const openTime = parseInt(currentHours.open.replace(':', ''));
+            const closeTime = parseInt(currentHours.close.replace(':', ''));
             
-            for (let hour = start; hour < end; hour++) {
-                for (let minute of ['00', '30']) {
-                    const time = `${hour.toString().padStart(2, '0')}:${minute}`;
-                    timeSelect.innerHTML += `<option value="${time}">${time}</option>`;
-                }
+            if (currentTime >= openTime && currentTime < closeTime) {
+                statusIndicator.classList.remove('closed');
+                statusIndicator.classList.add('open');
+                nextChangeSpan.textContent = 'Closes at ' + currentHours.close;
+            } else {
+                statusIndicator.classList.remove('open');
+                statusIndicator.classList.add('closed');
+                nextChangeSpan.textContent = currentTime < openTime ? 
+                    'Opens at ' + currentHours.open : 
+                    'Next Open: ' + getNextOpenDay(currentDay);
             }
         }
-    });
-}
+
+        // Update current time display
+        const timeDisplay = document.getElementById('currentTime');
+        if (timeDisplay) {
+            timeDisplay.textContent = CURRENT_TIMESTAMP;
+        }
+    }
+
+    function getNextOpenDay(currentDay) {
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        let currentIndex = days.indexOf(currentDay);
+        let daysChecked = 0;
+        
+        while (daysChecked < 7) {
+            currentIndex = (currentIndex + 1) % 7;
+            if (!businessHours[days[currentIndex]].closed) {
+                return days[currentIndex].charAt(0).toUpperCase() + 
+                       days[currentIndex].slice(1) + 
+                       ' at ' + 
+                       businessHours[days[currentIndex]].open;
+            }
+            daysChecked++;
+        }
+        return 'Check back later';
+    }
+
+    function initializeBookingSystem() {
+        const bookingButton = document.getElementById('bookingButton');
+        const bookingModal = document.getElementById('bookingModal');
+        
+        if (!bookingButton || !bookingModal) return;
+
+        const closeModal = bookingModal.querySelector('.modal-close');
+
+        bookingButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            bookingModal.style.display = 'block';
+            document.body.classList.add('modal-open');
+            populateTimeSlots();
+        });
+
+        if (closeModal) {
+            closeModal.addEventListener('click', function() {
+                bookingModal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+            });
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === bookingModal) {
+                bookingModal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+            }
+        });
+
+        // Booking form submission
+        const bookingForm = document.getElementById('bookingForm');
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Booking submitted successfully!');
+                bookingModal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+            });
+        }
+    }
+
+    function populateTimeSlots() {
+        const timeSelect = document.getElementById('time');
+        const dateInput = document.getElementById('date');
+        
+        if (!timeSelect || !dateInput) return;
+
+        dateInput.addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const day = selectedDate.toLocaleDateString('en-US', { weekday: 'lowercase' });
+            const hours = businessHours[day];
+            
+            timeSelect.innerHTML = '<option value="">Select a time</option>';
+            
+            if (!hours.closed) {
+                const start = parseInt(hours.open.split(':')[0]);
+                const end = parseInt(hours.close.split(':')[0]);
+                
+                for (let hour = start; hour < end; hour++) {
+                    for (let minute of ['00', '30']) {
+                        const time = `${hour.toString().padStart(2, '0')}:${minute}`;
+                        timeSelect.innerHTML += `<option value="${time}">${time}</option>`;
+                    }
+                }
+            }
+        });
+    }
+});
+
+// Wait for the DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Hamburger Menu Functionality
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.querySelector('.mobile-menu');
+    
+    if (hamburger && mobileMenu) {
+        hamburger.addEventListener('click', function() {
+            this.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+    }
