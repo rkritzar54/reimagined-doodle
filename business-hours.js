@@ -1,5 +1,5 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-26 00:20:35';
+const CURRENT_TIMESTAMP = '2025-03-26 02:06:45';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -59,23 +59,22 @@ function updateTimeDisplay() {
     const zoneElement = document.getElementById('userTimeZone');
     
     if (timeElement) {
-        // Convert UTC to EDT (UTC-4)
         const utcDate = new Date(CURRENT_TIMESTAMP);
-        const edtOffset = -4; // EDT is UTC-4
-        const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         
-        timeElement.textContent = edtDate.toLocaleString('en-US', {
+        timeElement.textContent = utcDate.toLocaleString('en-US', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
             day: 'numeric',
             hour: 'numeric',
             minute: '2-digit',
-            hour12: true
+            hour12: true,
+            timeZone: userTimeZone
         });
     }
     if (zoneElement) {
-        zoneElement.textContent = 'EDT';
+        zoneElement.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
     }
 }
 
@@ -84,16 +83,14 @@ function convertEDTtoLocal(timeStr) {
     
     // Parse EDT time
     const [hours, minutes] = timeStr.split(':').map(Number);
-
-    // Create a date object at the current date
-    const date = new Date();
     
-    // Set it to the EDT time by adjusting for UTC
-    // EDT is UTC-4, so we add 4 hours to convert EDT -> UTC
-    date.setUTCHours(hours + 4, minutes, 0, 0);
+    // Create date object with EDT time
+    const edtDate = new Date(CURRENT_TIMESTAMP);
+    // EDT is UTC-4, so add 4 to convert EDT to UTC
+    edtDate.setUTCHours(hours + 4, minutes, 0, 0);
     
-    // Convert to user's local timezone automatically
-    return date.toLocaleTimeString('en-US', {
+    // Get time in user's timezone
+    return edtDate.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit',
         hour12: true,
@@ -113,24 +110,153 @@ function convertLocalToEDT(localTimeStr) {
     if (period === 'AM' && hours === 12) hours = 0;
     
     // Create date object with the local time
-    const date = new Date();
+    const date = new Date(CURRENT_TIMESTAMP);
     date.setHours(hours, minutes, 0, 0);
     
-    // Get UTC hours
+    // Convert to EDT by getting UTC hours and subtracting 4 (EDT offset)
     const utcHours = date.getUTCHours();
-    
-    // Convert UTC to EDT (UTC-4)
     const edtHours = (24 + utcHours - 4) % 24;
     
     // Return in 24-hour format
     return `${edtHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
+
+function updateBusinessTable(hours) {
+    const tableBody = document.getElementById('hoursTable');
+    if (!tableBody) return;
+
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     
-    // Convert to 12-hour format with AM/PM
-    const period = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours % 12 || 12;
+    // Convert UTC to EDT for current day calculation
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+    const currentDay = edtDate.getDay();
+    const today = edtDate.toISOString().split('T')[0];
     
-    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    // Get holiday schedule if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holidayToday = settings.holidays.find(h => h.date === today);
+
+    const rows = days.map((day, index) => {
+        const schedule = hours[day];
+        const isToday = index === currentDay;
+        
+        let displayHours;
+        if (isToday && holidayToday) {
+            displayHours = holidayToday.closed ? 'Closed (Holiday)' : 
+                `${convertEDTtoLocal(holidayToday.open)} - ${convertEDTtoLocal(holidayToday.close)} (Holiday)`;
+        } else {
+            displayHours = schedule.closed ? 'Closed' : 
+                `${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
+        }
+        
+        return `
+            <tr${isToday ? ' class="today"' : ''}>
+                <td>${capitalize(day)}</td>
+                <td>${displayHours}</td>
+            </tr>
+        `;
+    });
+
+    tableBody.innerHTML = rows.join('');
+}
+
+function updateBusinessStatus(hours) {
+    const statusText = document.getElementById('openClosedText');
+    const statusIndicator = document.getElementById('currentStatus');
+    const nextChangeElement = document.getElementById('nextChange');
+    
+    if (!statusText || !statusIndicator) return;
+
+    const isOpen = checkIfOpen(hours);
+    
+    // Update indicator
+    statusIndicator.className = `status-indicator ${isOpen ? 'open' : 'closed'}`;
+    
+    // Update text
+    statusText.textContent = isOpen ? 'OPEN' : 'CLOSED';
+    
+    // Update next change time
+    if (nextChangeElement) {
+        nextChangeElement.textContent = getNextChangeTime(hours, isOpen);
+    }
+}
+
+function checkIfOpen(hours) {
+    // Convert UTC to EDT
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+    const today = edtDate.toISOString().split('T')[0];
+    
+    // Check if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holiday = settings.holidays.find(h => h.date === today);
+    
+    if (holiday) {
+        if (holiday.closed) return false;
+        
+        const currentTime = edtDate.getHours() * 60 + edtDate.getMinutes();
+        const [openHour, openMin] = holiday.open.split(':').map(Number);
+        const [closeHour, closeMin] = holiday.close.split(':').map(Number);
+        
+        let openMinutes = openHour * 60 + openMin;
+        let closeMinutes = closeHour * 60 + closeMin;
+        
+        if (closeMinutes < openMinutes) {
+            closeMinutes += 24 * 60;
+        }
+        
+        return currentTime >= openMinutes && currentTime < closeMinutes;
+    }
+
+    // Regular business hours check
+    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][edtDate.getDay()];
+    const schedule = hours[day];
+
+    if (schedule.closed) return false;
+
+    const currentTime = edtDate.getHours() * 60 + edtDate.getMinutes();
+    const [openHour, openMin] = schedule.open.split(':').map(Number);
+    const [closeHour, closeMin] = schedule.close.split(':').map(Number);
+
+    let openMinutes = openHour * 60 + openMin;
+    let closeMinutes = closeHour * 60 + closeMin;
+    
+    if (closeMinutes < openMinutes) {
+        closeMinutes += 24 * 60;
+    }
+
+    return currentTime >= openMinutes && currentTime < closeMinutes;
+}
+
+function getNextChangeTime(hours, isOpen) {
+    // Convert UTC to EDT
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+    const today = edtDate.toISOString().split('T')[0];
+    
+    // Check if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holiday = settings.holidays.find(h => h.date === today);
+    
+    if (holiday) {
+        if (holiday.closed) {
+            return getNextOpeningTime(hours);
+        }
+        return isOpen ? `Closes at ${convertEDTtoLocal(holiday.close)}` : 
+                       `Opens at ${convertEDTtoLocal(holiday.open)}`;
+    }
+
+    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][edtDate.getDay()];
+    
+    if (isOpen) {
+        return `Closes at ${convertEDTtoLocal(hours[day].close)}`;
+    } else {
+        return `Opens ${getNextOpeningTime(hours)}`;
+    }
 }
 
 function updateBusinessTable(hours) {
@@ -703,14 +829,13 @@ function getDefaultSettings() {
                 "Maintenance Service",
                 "SEO Optimization"
             ],
-            timeSlotDuration: 60, // in minutes
-            bufferBetweenBookings: 15 // in minutes
+            timeSlotDuration: 60,
+            bufferBetweenBookings: 15
         }
     };
 }
 
 function setupEventListeners() {
-    // Add any additional event listeners needed for the business hours page
     const refreshButton = document.getElementById('refreshStatus');
     if (refreshButton) {
         refreshButton.addEventListener('click', () => {
@@ -718,7 +843,6 @@ function setupEventListeners() {
         });
     }
 
-    // Add keyboard event listener for modal
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
             const modal = document.getElementById('bookingModal');
@@ -729,7 +853,6 @@ function setupEventListeners() {
         }
     });
 
-    // Add form validation listeners
     const bookingForm = document.getElementById('bookingForm');
     if (bookingForm) {
         const inputs = bookingForm.querySelectorAll('input, select, textarea');
