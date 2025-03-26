@@ -908,6 +908,76 @@ footer {
     }
 }
 
+/* Article Modal Content Styles */
+.modal .modal-content h2 {
+    color: #002147;
+    font-size: 2rem;
+    margin-bottom: 15px;
+    line-height: 1.3;
+}
+
+.modal .modal-content h3 {
+    color: #002147;
+    font-size: 1.4rem;
+    margin: 25px 0 15px;
+}
+
+.modal .modal-content p {
+    color: #333;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.modal .modal-content ul {
+    margin: 20px 0;
+    padding-left: 20px;
+}
+
+.modal .modal-content li {
+    color: #333;
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.modal-image {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.modal.active .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Modal Scrollbar */
+.modal .modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal .modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.modal .modal-content::-webkit-scrollbar-thumb {
+    background: #002147;
+    border-radius: 4px;
+}
+
+.modal .modal-content::-webkit-scrollbar-thumb:hover {
+    background: #003875;
+}
+
+/* Modal Open State */
+.modal-open {
+    overflow: hidden;
+}
+
 @media (max-width: 480px) {
     .modal-content {
         margin: 5% auto;
