@@ -82,8 +82,49 @@ function updateTimeDisplay() {
 function convertEDTtoLocal(timeStr) {
     if (!timeStr) return '';
     
-    // Parse the 24-hour time
+    // Parse EDT time
     const [hours, minutes] = timeStr.split(':').map(Number);
+
+    // Create a date object at the current date
+    const date = new Date();
+    
+    // Set it to the EDT time by adjusting for UTC
+    // EDT is UTC-4, so we add 4 hours to convert EDT -> UTC
+    date.setUTCHours(hours + 4, minutes, 0, 0);
+    
+    // Convert to user's local timezone automatically
+    return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    });
+}
+
+function convertLocalToEDT(localTimeStr) {
+    if (!localTimeStr) return '';
+    
+    // Parse the local time
+    const [time, period] = localTimeStr.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    
+    // Convert to 24-hour format
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    
+    // Create date object with the local time
+    const date = new Date();
+    date.setHours(hours, minutes, 0, 0);
+    
+    // Get UTC hours
+    const utcHours = date.getUTCHours();
+    
+    // Convert UTC to EDT (UTC-4)
+    const edtHours = (24 + utcHours - 4) % 24;
+    
+    // Return in 24-hour format
+    return `${edtHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+}
     
     // Convert to 12-hour format with AM/PM
     const period = hours >= 12 ? 'PM' : 'AM';
