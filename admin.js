@@ -786,6 +786,26 @@ function checkBusinessStatus() {
     const currentTime = now.getHours() * 60 + now.getMinutes();
     const [openHour, openMin] = schedule.open.split(':').map(Number);
     const [closeHour, closeMin] = schedule.close.split(':').map(Number);
+
+    let openMinutes = openHour * 60 + openMin;
+    let closeMinutes = closeHour * 60 + closeMin;
+    
+    if (closeMinutes < openMinutes) {
+        closeMinutes += 24 * 60;
+    }
+
+    return currentTime >= openMinutes && currentTime < closeMinutes;
+}
+
+    // Regular business hours check
+    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+    const schedule = hours[day];
+    
+    if (schedule.closed) return false;
+    
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const [openHour, openMin] = schedule.open.split(':').map(Number);
+    const [closeHour, closeMin] = schedule.close.split(':').map(Number);
     
     let openMinutes = openHour * 60 + openMin;
     let closeMinutes = closeHour * 60 + closeMin;
