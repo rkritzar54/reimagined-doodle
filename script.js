@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const mobileMenu = document.querySelector('.mobile-menu');
     
     if (hamburger && mobileMenu) {
-        hamburger.addEventListener('click', function() {
+        hamburger.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent document click from immediately closing menu
             this.classList.toggle('active');
             mobileMenu.classList.toggle('active');
         });
