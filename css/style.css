@@ -1,240 +1,86 @@
-/* Global Styles */
-body {
-    font-family: 'Arial', sans-serif;
-    line-height: 1.6;
+/* Basic Reset */
+body, h1, h2, h3, h4, h5, h6, p, ul, li, a {
     margin: 0;
     padding: 0;
-    color: #333;
-    background-color: #f7f7f7;
-}
-
-a {
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
     text-decoration: none;
-    color: #002147;
+    list-style: none;
+    color: inherit;
 }
 
-a:hover {
-    color: #004494;
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.7;
+    background-color: #f4f6f8; /* Very light gray background */
+    color: #333;
+    margin: 0;
 }
 
 .container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 1140px;
+    margin: 30px auto;
     padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem;
 }
 
-/* Header Styles */
+/* Header Styling */
 .main-header {
+    background-color: #003366; /* Dark Blue Header */
+    color: #fff;
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #002147;
-    color: white;
-    padding: 15px 20px;
+    margin-bottom: 20px;
 }
 
 .logo-name {
     display: flex;
     align-items: center;
-    gap: 15px;
 }
 
 .logo {
-    height: 50px;
+    width: 60px;
+    height: 60px;
+    margin-right: 15px;
 }
 
-.main-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
+.logo-name h1 {
+    font-size: 1.75rem;
 }
 
 .main-nav ul {
-    list-style: none;
     display: flex;
-    gap: 20px;
-    padding: 0;
-    margin: 0;
+    position: relative;
 }
 
-.main-nav a {
-    color: white;
-    font-weight: bold;
-    transition: color 0.3s ease;
+.main-nav ul li {
+    margin-left: 25px;
+    position: relative;
 }
 
-.main-nav a:hover {
-    color: #f9a11f;
-}
-
-/* Dropdown Menu Styles */
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    background-color: #002147;
-    padding: 10px 0;
-    list-style: none;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.dropdown:hover .dropdown-menu {
+.main-nav ul li a {
+    color: #fff;
     display: block;
-}
-
-.dropdown-menu li {
-    padding: 8px 15px;
-}
-
-.dropdown-menu li a {
-    color: white;
-    display: block;
-    transition: background 0.3s ease;
-}
-
-.dropdown-menu li a:hover {
-    background: #004494;
-}
-
-/* Hero Section Styles */
-.hero {
-    margin: 20px 0;
-}
-
-.hero-image {
-    width: 100%;
-    border-radius: 5px;
-}
-
-/* Content Columns */
-.content-columns {
-    display: flex;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.left-column,
-.right-column {
-    flex: 1;
-}
-
-.news-updates,
-.our-mission,
-.quick-links,
-.upcoming-events {
-    background: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-h2 {
-    margin-top: 0;
-    font-size: 1.5rem;
-    color: #002147;
-}
-
-h3 {
-    font-size: 1.25rem;
-    color: #002147;
-}
-
-/* Quick Links Section */
-.link-buttons-vertical a {
-    display: block;
-    background: #002147;
-    color: white;
-    text-align: center;
-    padding: 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    transition: background 0.3s ease;
-}
-
-.link-buttons-vertical a:hover {
-    background: #004494;
-}
-
-/* Footer Styles */
-.main-footer {
-    background: #002147;
-    color: white;
-    padding: 20px 0;
-}
-
-.footer-columns {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 20px;
-}
-
-.footer-left,
-.footer-right {
-    flex: 1;
-    margin-right: 20px;
-}
-
-.footer-left {
-    margin-right: 40px;
-}
-
-.footer-left p,
-.footer-right p {
-    margin: 5px 0;
-}
-
-.footer-right h3 {
-    margin-bottom: 10px;
-}
-
-.social-links a {
-    color: #f9a11f;
-    margin-right: 10px;
-    transition: color 0.3s ease;
-}
-
-.social-links a:hover {
-    color: white;
-}
-
-.copyright {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 0.9rem;
-}
-
-/* Buttons */
-.button {
-    background: #002147;
-    color: white;
     padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
+    transition: color 0.3s ease;
+}
+
+.main-nav ul li a:hover {
+    color: #ddd;
+}
+
+.main-nav ul li a.active {
     font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s ease;
+    color: #fff;
 }
 
-.button:hover {
-    background: #004494;
-}
-
-.hamburger-menu {
-    display: none;
-    cursor: pointer;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.hamburger-menu span {
-    width: 25px;
-    height: 3px;
-    background: #333;
-}
-
-/* Dropdown Menu Styling */
+/* Dropdown Styling */
 .dropdown {
     position: relative;
 }
@@ -242,19 +88,20 @@ h3 {
 .dropdown-menu {
     display: none; /* Hidden by default */
     position: absolute;
-    top: 100%; /* Place below the parent item */
+    top: 100%;
     left: 0;
-    background-color: #003366; /* Dark blue dropdown background */
+    background-color: #003366; /* Dark Blue Dropdown */
+    border-top: 1px solid #004d99;
     padding: 10px 0;
     list-style: none;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     z-index: 1000;
 }
 
-/* Ensure dropdown is displayed properly on hover */
-.dropdown:hover .dropdown-menu {
-    display: block; /* Show dropdown when parent is hovered */
+.dropdown:hover .dropdown-menu,
+.dropdown.open .dropdown-menu {
+    display: block; /* Show dropdown when parent is hovered or has "open" class */
 }
 
 .dropdown-menu li {
@@ -273,9 +120,143 @@ h3 {
     background-color: #004d99; /* Slightly lighter blue */
 }
 
-/* Prevent dropdown menus from flickering */
-.dropdown-menu {
-    pointer-events: auto; /* Prevent flickering when hovered */
+/* Hero Section */
+.hero {
+    margin-bottom: 30px;
+}
+
+.hero-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Content Columns */
+.content-columns {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.left-column {
+    flex: 4; /* Adjusted to be narrower */
+}
+
+.right-column {
+    flex: 8; /* Adjusted to be wider */
+}
+
+.news-updates, .our-mission, .quick-links, .upcoming-events {
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
+}
+
+.news-updates h2, .our-mission h2, .quick-links h2, .upcoming-events h2 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    color: #003366; /* Dark Blue Headings */
+}
+
+/* Pill Button */
+.pill-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff; /* Blue accent */
+    color: #fff;
+    border-radius: 20px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.pill-button:hover {
+    background-color: #0056b3;
+}
+
+.rivers-links {
+    margin-top: 15px;
+}
+
+.rivers-links h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #003366; /* Dark Blue Title */
+}
+
+/* Vertical Button Layout */
+.rivers-links .link-buttons-vertical {
+    margin-top: 0;
+}
+
+.rivers-links .link-buttons-vertical .pill-button {
+    display: block;
+    margin-bottom: 10px;
+    margin-right: 0;
+    width: fit-content;
+    background-color: #003366; /* Dark Blue Buttons */
+    border-radius: 5px; /* Slightly Rounded Corners */
+}
+
+.rivers-links .link-buttons-vertical .pill-button:hover {
+    background-color: #004d99;
+}
+
+.upcoming-events iframe {
+    margin-top: 15px;
+}
+
+/* Footer Styling */
+.main-footer {
+    background-color: #003366; /* Dark Blue Footer */
+    color: #fff;
+    padding: 30px 20px;
+    margin-top: 40px;
+}
+
+.footer-columns {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #004d99;
+}
+
+.footer-left, .footer-right {
+    flex: 1;
+}
+
+.footer-left h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.footer-right h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.social-links a {
+    color: #fff;
+    margin-right: 15px;
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: #ddd;
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 20px;
+    color: #ddd;
+    font-size: 0.9em;
 }
 
 /* Responsive Design */
@@ -288,26 +269,8 @@ h3 {
         flex-direction: column;
     }
 
-    .footer-left {
-        margin-right: 0;
-    }
-
-    .hamburger-menu {
-        display: flex;
-    }
-
-    .main-nav ul {
-        display: none;
-        flex-direction: column;
-        background: #fff;
-        position: absolute;
-        top: 60px;
-        right: 0;
-        width: 100%;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
-
-    .main-nav ul.show {
-        display: flex;
+    .dropdown-menu {
+        position: static;
+        box-shadow: none;
     }
 }
