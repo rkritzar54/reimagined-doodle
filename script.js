@@ -352,10 +352,9 @@ function setupMobileNavigation() {
     initializeBookingSystem();
 });
 
-// Business Hours Functions
-// Business Hours Functions
+// Updated Business Hours Functions
 function updateBusinessStatus() {
-    const now = new Date();
+    const now = new Date(CURRENT_TIMESTAMP);
     const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const currentHours = businessHours[currentDay];
     
@@ -389,7 +388,7 @@ function updateBusinessStatus() {
     // Update current time display
     const timeDisplay = document.getElementById('currentTime');
     if (timeDisplay) {
-        timeDisplay.textContent = CURRENT_TIMESTAMP;
+        timeDisplay.textContent = now.toISOString();
     }
 }
 
