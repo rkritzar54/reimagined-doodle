@@ -353,6 +353,7 @@ function setupMobileNavigation() {
 });
 
 // Business Hours Functions
+// Business Hours Functions
 function updateBusinessStatus() {
     const now = new Date();
     const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
