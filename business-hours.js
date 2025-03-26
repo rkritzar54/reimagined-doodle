@@ -1,5 +1,5 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-25 23:34:07';
+const CURRENT_TIMESTAMP = '2025-03-26 00:01:18';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -127,24 +127,54 @@ function updateFooter(settings) {
 function updateHolidayList(settings) {
     const holidayList = document.getElementById('holidayList');
     if (holidayList && settings.holidays) {
+        const now = new Date(CURRENT_TIMESTAMP);
+        const currentYear = now.getFullYear();
+        
         holidayList.innerHTML = settings.holidays
             .sort((a, b) => new Date(a.date) - new Date(b.date))
             .map(holiday => {
+                const holidayDate = new Date(holiday.date);
+                const displayDate = holidayDate.toLocaleDateString();
+                const isPast = holidayDate < now;
+                
                 const holidayHours = holiday.closed ? 
-                    'Closed' : 
-                    `${convertEDTtoLocal(holiday.open)} - ${convertEDTtoLocal(holiday.close)}`;
+                    '<span class="holiday-closed">Closed</span>' : 
+                    `<span class="holiday-hours">${formatTimeRange(holiday.open, holiday.close)}</span>`;
                 
                 return `
-                    <li>
+                    <li class="${isPast ? 'past-holiday' : 'upcoming-holiday'}">
                         <div class="holiday-info">
                             <strong>${holiday.name}</strong>
-                            <span class="holiday-date">${new Date(holiday.date).toLocaleDateString()}</span>
+                            <span class="holiday-date">${displayDate}</span>
                         </div>
-                        <span class="holiday-hours">${holidayHours}</span>
+                        ${holidayHours}
                     </li>
                 `;
             }).join('');
     }
+}
+
+function formatTimeRange(openTime, closeTime) {
+    if (!openTime || !closeTime) return 'Hours TBD';
+    return `${convertEDTtoLocal(openTime)} - ${convertEDTtoLocal(closeTime)}`;
+}
+
+function convertEDTtoLocal(timeStr) {
+    if (!timeStr) return '';
+    
+    // Parse the input time
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    
+    // Create a date object for today with the given EDT time
+    const today = new Date(CURRENT_TIMESTAMP);
+    const edtDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes);
+    
+    // Format the time
+    return edtDate.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
 }
 
 function updateBusinessTable(hours) {
@@ -153,13 +183,24 @@ function updateBusinessTable(hours) {
 
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     const currentDay = new Date(CURRENT_TIMESTAMP).getDay();
+    const today = new Date(CURRENT_TIMESTAMP).toISOString().split('T')[0];
+    
+    // Get holiday schedule if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holidayToday = settings.holidays.find(h => h.date === today);
 
     const rows = days.map((day, index) => {
         const schedule = hours[day];
         const isToday = index === currentDay;
         
-        const displayHours = schedule.closed ? 'Closed' : 
-            `${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
+        let displayHours;
+        if (isToday && holidayToday) {
+            displayHours = holidayToday.closed ? 'Closed (Holiday)' : 
+                `${convertEDTtoLocal(holidayToday.open)} - ${convertEDTtoLocal(holidayToday.close)} (Holiday)`;
+        } else {
+            displayHours = schedule.closed ? 'Closed' : 
+                `${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
+        }
         
         return `
             <tr${isToday ? ' class="today"' : ''}>
@@ -208,8 +249,13 @@ function checkIfOpen(hours) {
         const [openHour, openMin] = holiday.open.split(':').map(Number);
         const [closeHour, closeMin] = holiday.close.split(':').map(Number);
         
-        const openMinutes = openHour * 60 + openMin;
-        const closeMinutes = closeHour * 60 + closeMin;
+        let openMinutes = openHour * 60 + openMin;
+        let closeMinutes = closeHour * 60 + closeMin;
+        
+        // Handle closing times past midnight
+        if (closeMinutes < openMinutes) {
+            closeMinutes += 24 * 60;
+        }
         
         return currentTime >= openMinutes && currentTime < closeMinutes;
     }
@@ -224,8 +270,13 @@ function checkIfOpen(hours) {
     const [openHour, openMin] = schedule.open.split(':').map(Number);
     const [closeHour, closeMin] = schedule.close.split(':').map(Number);
 
-    const openMinutes = openHour * 60 + openMin;
-    const closeMinutes = closeHour * 60 + closeMin;
+    let openMinutes = openHour * 60 + openMin;
+    let closeMinutes = closeHour * 60 + closeMin;
+    
+    // Handle closing times past midnight
+    if (closeMinutes < openMinutes) {
+        closeMinutes += 24 * 60;
+    }
 
     return currentTime >= openMinutes && currentTime < closeMinutes;
 }
@@ -285,23 +336,6 @@ function getNextOpeningTime(hours) {
     return 'soon';
 }
 
-function convertEDTtoLocal(timeStr) {
-    if (!timeStr) return '';
-    
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    
-    const edtDate = new Date();
-    edtDate.setUTCHours(hours + 4, minutes, 0, 0);
-    
-    const localDate = new Date(edtDate.getTime());
-    
-    return localDate.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-    });
-}
-
 function initializeBookingSystem() {
     const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
     setupBookingForm(settings);
@@ -340,12 +374,14 @@ function setupBookingModal() {
     if (openBtn) {
         openBtn.addEventListener('click', () => {
             modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
         });
     }
 
     if (closeBtn) {
         closeBtn.addEventListener('click', () => {
             modal.style.display = 'none';
+            document.body.style.overflow = '';
         });
     }
 
@@ -356,6 +392,7 @@ function setupBookingModal() {
     window.addEventListener('click', (event) => {
         if (event.target === modal) {
             modal.style.display = 'none';
+            document.body.style.overflow = '';
         }
     });
 }
@@ -367,22 +404,22 @@ function handleDateChange(event) {
     const hours = getBusinessHours();
     const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
     
-    // Check if selected date is a holiday
-    const holiday = settings.holidays.find(h => h.date === dateString);
-    
     const timeInput = document.getElementById('time');
     const timeHelp = document.getElementById('timeHelp');
     
     if (!timeInput) return;
 
+    // Check if selected date is a holiday
+    const holiday = settings.holidays.find(h => h.date === dateString);
+    
     if (holiday) {
         if (holiday.closed) {
             timeInput.disabled = true;
             timeInput.value = '';
             if (timeHelp) {
                 timeHelp.textContent = `${holiday.name} - Closed`;
+                timeHelp.className = 'text-danger';
             }
-            alert(`Selected date (${holiday.name}) is not available for booking. Please choose another day.`);
             return;
         }
         
@@ -392,6 +429,7 @@ function handleDateChange(event) {
         
         if (timeHelp) {
             timeHelp.textContent = `${holiday.name} hours: ${convertEDTtoLocal(holiday.open)} - ${convertEDTtoLocal(holiday.close)}`;
+            timeHelp.className = 'text-info';
         }
         return;
     }
@@ -404,8 +442,8 @@ function handleDateChange(event) {
         timeInput.value = '';
         if (timeHelp) {
             timeHelp.textContent = 'Closed on this day';
+            timeHelp.className = 'text-danger';
         }
-        alert('Selected day is not available for booking. Please choose another day.');
         return;
     }
 
@@ -415,6 +453,7 @@ function handleDateChange(event) {
 
     if (timeHelp) {
         timeHelp.textContent = `Business hours: ${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
+        timeHelp.className = 'text-info';
     }
 }
 
@@ -441,12 +480,13 @@ function handleBookingSubmission(event) {
     
     event.target.reset();
     document.getElementById('bookingModal').style.display = 'none';
-    alert('Thank you! Your booking request has been submitted and is pending approval.');
+    document.body.style.overflow = '';
+    showNotification('Thank you! Your booking request has been submitted and is pending approval.', 'success');
 }
 
 function validateBooking(booking) {
     if (!booking.service) {
-        alert('Please select a service.');
+        showNotification('Please select a service.', 'error');
         return false;
     }
 
@@ -458,7 +498,7 @@ function validateBooking(booking) {
     const holiday = settings.holidays.find(h => h.date === booking.date);
     if (holiday) {
         if (holiday.closed) {
-            alert(`Selected date (${holiday.name}) is not available for booking. Please choose another day.`);
+            showNotification(`Selected date (${holiday.name}) is not available for booking. Please choose another day.`, 'error');
             return false;
         }
         
@@ -471,8 +511,8 @@ function validateBooking(booking) {
         const closeMinutes = closeHour * 60 + closeMinute;
         
         if (selectedMinutes < openMinutes || selectedMinutes >= closeMinutes) {
-            alert(`Selected time is outside of holiday hours. Please choose a time between ${
-                convertEDTtoLocal(holiday.open)} and ${convertEDTtoLocal(holiday.close)}`);
+            showNotification(`Selected time is outside of holiday hours. Please choose a time between ${
+                convertEDTtoLocal(holiday.open)} and ${convertEDTtoLocal(holiday.close)}`, 'error');
             return false;
         }
         return true;
@@ -482,7 +522,7 @@ function validateBooking(booking) {
     const schedule = hours[['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][selectedDay]];
 
     if (schedule.closed) {
-        alert('Selected day is not available for booking. Please choose another day.');
+        showNotification('Selected day is not available for booking. Please choose another day.', 'error');
         return false;
     }
 
@@ -495,8 +535,8 @@ function validateBooking(booking) {
     const closeMinutes = closeHour * 60 + closeMinute;
 
     if (selectedMinutes < openMinutes || selectedMinutes >= closeMinutes) {
-        alert(`Selected time is outside of business hours. Please choose a time between ${
-            convertEDTtoLocal(schedule.open)} and ${convertEDTtoLocal(schedule.close)}`);
+        showNotification(`Selected time is outside of business hours. Please choose a time between ${
+            convertEDTtoLocal(schedule.open)} and ${convertEDTtoLocal(schedule.close)}`, 'error');
         return false;
     }
 
@@ -513,10 +553,39 @@ function saveBooking(booking) {
     activities.unshift({
         timestamp: CURRENT_TIMESTAMP,
         action: 'New Booking',
-        description: `Booking request from ${booking.name} for ${booking.service} on ${booking.date} at ${booking.time}`,
+        description: `Booking request from ${booking.name} for ${booking.service} on ${booking.date} at ${convertEDTtoLocal(booking.time)}`,
         user: CURRENT_USER
     });
     localStorage.setItem('activities', JSON.stringify(activities.slice(0, 50)));
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-message">${message}</span>
+            <button class="notification-close">&times;</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Auto-dismiss after 5 seconds
+    const dismissTimeout = setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+    
+    // Allow manual dismissal
+    notification.querySelector('.notification-close').addEventListener('click', () => {
+        clearTimeout(dismissTimeout);
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    });
 }
 
 function getDefaultSettings() {
@@ -530,7 +599,13 @@ function getDefaultSettings() {
             location: "Hidden",
             missionStatement: "To provide accessible and clean design for all."
         },
-        socialMedia: [],
+        socialMedia: [
+            {
+                platform: "GitHub",
+                url: "https://github.com/rkritzar54",
+                icon: "github"
+            }
+        ],
         holidays: [
             { 
                 name: "New Year's Day", 
@@ -564,13 +639,17 @@ function getDefaultSettings() {
         bookingSettings: {
             minNotice: 24,
             maxFuture: 30,
-            services: ["Initial Consultation", "Follow-up Visit", "General Appointment", "Urgent Care"]
+            services: [
+                "Initial Consultation",
+                "Website Design",
+                "Website Development",
+                "Maintenance Service",
+                "SEO Optimization"
+            ],
+            timeSlotDuration: 60, // in minutes
+            bufferBetweenBookings: 15 // in minutes
         }
     };
-}
-
-function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function setupEventListeners() {
@@ -581,4 +660,79 @@ function setupEventListeners() {
             updatePublicDisplay();
         });
     }
+
+    // Add keyboard event listener for modal
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('bookingModal');
+            if (modal && modal.style.display === 'block') {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
+    });
+
+    // Add form validation listeners
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+        const inputs = bookingForm.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('invalid', (event) => {
+                event.preventDefault();
+                showNotification(`Please check the ${input.name} field`, 'error');
+            });
+        });
+    }
 }
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Utility function to format date/time
+function formatDateTime(date) {
+    return new Date(date).toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
+// Utility function to check if a date is today
+function isToday(date) {
+    const today = new Date(CURRENT_TIMESTAMP);
+    const checkDate = new Date(date);
+    return today.toISOString().split('T')[0] === checkDate.toISOString().split('T')[0];
+}
+
+// Utility function to format time range
+function formatTimeRange(start, end) {
+    if (!start || !end) return 'Hours not set';
+    return `${convertEDTtoLocal(start)} - ${convertEDTtoLocal(end)}`;
+}
+
+// Initialize everything when the script loads
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        initializeBusinessHours();
+        initializeBookingSystem();
+        updatePublicDisplay();
+        setupEventListeners();
+    } catch (error) {
+        console.error('Initialization error:', error);
+        showNotification('There was an error initializing the system. Please refresh the page.', 'error');
+    }
+});
+
+// Auto-refresh status every minute
+setInterval(() => {
+    try {
+        updatePublicDisplay();
+    } catch (error) {
+        console.error('Auto-refresh error:', error);
+    }
+}, 60000);
