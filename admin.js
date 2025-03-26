@@ -3,14 +3,20 @@ const CURRENT_TIMESTAMP = '2025-03-26 00:47:28';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Force admin status for testing
+    localStorage.setItem('isAdmin', 'true');
+    
     // Check if user is admin
     if (localStorage.getItem('isAdmin') !== 'true') {
         console.log('Not an admin user');
         return;
     }
 
+    console.log('Admin user confirmed');
+
     // Initialize if we're on the admin page
     if (window.location.pathname.includes('admin.html')) {
+        console.log('On admin page, initializing...');
         initializeAdminPortal();
     }
 
@@ -19,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeAdminPortal() {
+    console.log('Initializing admin portal...');
+    
     // Initialize all admin sections
     initializeTabs();
     initializeBusinessHours();
@@ -33,16 +41,28 @@ function initializeTabs() {
     const tabs = document.querySelectorAll('.admin-tab');
     const tabLinks = document.querySelectorAll('.admin-sidebar li');
 
+    console.log('Found tabs:', tabs.length);
+    console.log('Found tabLinks:', tabLinks.length);
+
     tabLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            const tabId = link.getAttribute('data-tab');
+        const tabId = link.getAttribute('data-tab');
+        console.log('Tab link found:', tabId);
+        
+        link.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default behavior
+            console.log('Clicked tab:', tabId);
             
             // Update active states
             tabLinks.forEach(l => l.classList.remove('active'));
             tabs.forEach(t => t.classList.remove('active'));
             
             link.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            } else {
+                console.error('Target tab not found:', tabId);
+            }
             
             // Update URL hash
             window.location.hash = tabId;
@@ -54,7 +74,14 @@ function initializeTabs() {
 
     // Handle initial load
     const hash = window.location.hash.slice(1) || 'dashboard';
-    document.querySelector(`[data-tab="${hash}"]`)?.click();
+    const defaultTab = document.querySelector(`[data-tab="${hash}"]`);
+    if (defaultTab) {
+        defaultTab.click();
+    } else {
+        console.error('Default tab not found:', hash);
+        // Fall back to first tab if available
+        tabLinks[0]?.click();
+    }
 }
 
 function loadTabData(tabId) {
