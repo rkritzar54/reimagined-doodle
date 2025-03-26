@@ -2,19 +2,26 @@
 const CURRENT_TIMESTAMP = '2025-03-26 03:02:04';
 const CURRENT_USER = 'rkritzar54';
 
-// Hamburger menu functionality
+// Wait for DOM content to load
 document.addEventListener('DOMContentLoaded', function() {
+    // Mobile Navigation Setup
+    setupMobileNavigation();
+});
+
+// Mobile Navigation Function
+function setupMobileNavigation() {
     const hamburger = document.getElementById('hamburger');
     const mobileMenu = document.querySelector('.mobile-menu');
     
     if (hamburger && mobileMenu) {
+        // Hamburger click event
         hamburger.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent document click from immediately closing menu
+            e.stopPropagation();
             this.classList.toggle('active');
             mobileMenu.classList.toggle('active');
         });
 
-        // Close mobile menu when clicking a link
+        // Handle clicking links in mobile menu
         mobileMenu.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 hamburger.classList.remove('active');
@@ -22,15 +29,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Close mobile menu when clicking outside
+        // Close menu when clicking outside
         document.addEventListener('click', function(e) {
-            if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+            if (mobileMenu.classList.contains('active') && 
+                !hamburger.contains(e.target) && 
+                !mobileMenu.contains(e.target)) {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // Close menu on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
                 hamburger.classList.remove('active');
                 mobileMenu.classList.remove('active');
             }
         });
     }
-});
+}
 
     // Modal functionality for articles
     const modal = document.getElementById('articleModal');
