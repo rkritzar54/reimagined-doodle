@@ -54,66 +54,53 @@ body {
     font-size: 1.75rem;
 }
 
+/* Dropdown Menu Styling */
 .main-nav ul {
+    list-style: none;
     display: flex;
-    position: relative;
 }
 
 .main-nav ul li {
-    margin-left: 25px;
     position: relative;
+    margin-left: 20px;
 }
 
 .main-nav ul li a {
     color: #fff;
-    display: block;
     padding: 10px 15px;
-    transition: color 0.3s ease;
+    display: inline-block;
+    transition: background-color 0.3s ease;
 }
 
 .main-nav ul li a:hover {
-    color: #ddd;
-}
-
-.main-nav ul li a.active {
-    font-weight: bold;
-    color: #fff;
-}
-
-/* Dropdown Styling */
-.dropdown {
-    position: relative;
+    background-color: #004d99; /* Lighter blue */
+    text-decoration: none;
 }
 
 .dropdown-menu {
-    display: none; /* Hidden by default */
+    display: none;
     position: absolute;
-    top: 100%;
+    top: 100%; /* Dropdown below the parent */
     left: 0;
-    background-color: #003366; /* Dark Blue Dropdown */
-    border-top: 1px solid #004d99;
+    background-color: #003366; /* Dark blue dropdown */
     padding: 10px 0;
-    list-style: none;
-    border-radius: 0.25rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 5px;
     z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
-.dropdown:hover .dropdown-menu,
-.dropdown.open .dropdown-menu {
-    display: block; /* Show dropdown when parent is hovered or has "open" class */
+.dropdown:hover .dropdown-menu {
+    display: block; /* Shows dropdown menu when parent is hovered */
 }
 
 .dropdown-menu li {
     margin: 0;
-    text-align: left;
 }
 
 .dropdown-menu li a {
+    color: #fff;
     padding: 10px 20px;
     display: block;
-    color: white;
-    transition: background 0.3s ease;
 }
 
 .dropdown-menu li a:hover {
