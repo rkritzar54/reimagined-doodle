@@ -1,5 +1,5 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-25 23:37:52';
+const CURRENT_TIMESTAMP = '2025-03-26 00:47:28';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -627,7 +627,9 @@ function getAllBookings() {
 }
 
 function getTodayBookings() {
-    const today = new Date(CURRENT_TIMESTAMP).toISOString().split('T')[0];
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const today = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000)).toISOString().split('T')[0];
     return getAllBookings().filter(booking => booking.date === today);
 }
 
@@ -637,7 +639,9 @@ function getPendingBookings() {
 
 function checkBusinessStatus() {
     const hours = JSON.parse(localStorage.getItem('businessHours')) || getDefaultBusinessHours();
-    const now = new Date(CURRENT_TIMESTAMP);
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const now = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
     const today = now.toISOString().split('T')[0];
     
     // Check if today is a holiday
@@ -647,14 +651,18 @@ function checkBusinessStatus() {
     if (holiday) {
         if (holiday.closed) return false;
         
-        const currentTime = now.getHours() * 100 + now.getMinutes();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
         const [openHour, openMin] = holiday.open.split(':').map(Number);
         const [closeHour, closeMin] = holiday.close.split(':').map(Number);
         
-        const openTime = openHour * 100 + openMin;
-        const closeTime = closeHour * 100 + closeMin;
+        let openMinutes = openHour * 60 + openMin;
+        let closeMinutes = closeHour * 60 + closeMin;
         
-        return currentTime >= openTime && currentTime < closeTime;
+        if (closeMinutes < openMinutes) {
+            closeMinutes += 24 * 60;
+        }
+        
+        return currentTime >= openMinutes && currentTime < closeMinutes;
     }
 
     // Regular business hours check
@@ -663,12 +671,16 @@ function checkBusinessStatus() {
     
     if (schedule.closed) return false;
     
-    const currentTime = now.getHours() * 100 + now.getMinutes();
-    const [openHour, openMinute] = schedule.open.split(':').map(Number);
-    const [closeHour, closeMinute] = schedule.close.split(':').map(Number);
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    const [openHour, openMin] = schedule.open.split(':').map(Number);
+    const [closeHour, closeMin] = schedule.close.split(':').map(Number);
     
-    const openTime = openHour * 100 + openMinute;
-    const closeTime = closeHour * 100 + closeMinute;
+    let openMinutes = openHour * 60 + openMin;
+    let closeMinutes = closeHour * 60 + closeMin;
     
-    return currentTime >= openTime && currentTime < closeTime;
+    if (closeMinutes < openMinutes) {
+        closeMinutes += 24 * 60;
+    }
+    
+    return currentTime >= openMinutes && currentTime < closeMinutes;
 }
