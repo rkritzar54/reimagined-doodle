@@ -3,85 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Portal</title>
+    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/admin.css">
 </head>
-<body>
-    <header class="main-header">
-        <div class="logo-name">
-            <img src="images/logo.png" alt="Logo" class="logo">
-            <h1>Admin Portal</h1>
-        </div>
-        <nav class="main-nav">
-            <ul>
-                <li><a href="javascript:void(0)" class="tab-item active" data-tab="dashboard">Dashboard</a></li>
-                <li><a href="javascript:void(0)" class="tab-item" data-tab="about">About Page</a></li>
-                <li><a href="javascript:void(0)" class="tab-item" data-tab="business-hours">Business Hours</a></li>
-                <li><a href="javascript:void(0)" class="tab-item" data-tab="tech-news">Tech News</a></li>
-                <li><a href="javascript:void(0)" class="tab-item" data-tab="crime-news">Crime News</a></li>
-                <li><a href="javascript:void(0)" class="tab-item" data-tab="settings">Settings</a></li>
-                <li><a href="javascript:void(0)" class="tab-item" data-tab="logout">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <div class="container">
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <h2>Dashboard</h2>
-            <div class="dashboard-grid">
-                <div class="dashboard-item">
-                    <h3>Current Status</h3>
-                    <p id="current-status">Loading...</p>
-                </div>
-                <div class="dashboard-item">
-                    <h3>Business Hours</h3>
-                    <p>Last Updated: <span id="hours-updated">Never</span></p>
-                </div>
-                <div class="dashboard-item">
-                    <h3>About Page</h3>
-                    <p>Last Updated: <span id="about-updated">Never</span></p>
-                </div>
-                <div class="dashboard-item">
-                    <h3>News Articles</h3>
-                    <p>Tech News: <span id="tech-news-count">0</span> articles</p>
-                    <p>Crime News: <span id="crime-news-count">0</span> articles</p>
-                </div>
+<body class="admin-body">
+    <header class="admin-header">
+        <div class="admin-header-content">
+            <div class="admin-info">
+                <img src="https://github.com/rkritzar54.png" alt="Admin Avatar" class="admin-avatar">
+                <span class="admin-username">rkritzar54</span>
             </div>
         </div>
+    </header>
 
-        <!-- About Page Tab -->
-        <div id="about" class="tab-content">
-            <h2>Edit About Page</h2>
-            <!-- Content editor will be inserted here -->
-        </div>
+    <div class="admin-container">
+        <nav class="admin-sidebar">
+            <ul class="admin-tabs">
+                <li class="tab-item active" data-tab="dashboard">
+                    <i class="icon">📊</i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="tab-item" data-tab="about">
+                    <i class="icon">ℹ️</i>
+                    <span>About Page</span>
+                </li>
+                <li class="tab-item" data-tab="business-hours">
+                    <i class="icon">🕒</i>
+                    <span>Business Hours</span>
+                </li>
+                <li class="tab-item" data-tab="tech-news">
+                    <i class="icon">💻</i>
+                    <span>Tech News</span>
+                </li>
+                <li class="tab-item" data-tab="crime-news">
+                    <i class="icon">🚨</i>
+                    <span>Crime News</span>
+                </li>
+                <li class="tab-item" data-tab="settings">
+                    <i class="icon">⚙️</i>
+                    <span>Settings</span>
+                </li>
+                <li class="tab-item logout" data-tab="logout">
+                    <i class="icon">🚪</i>
+                    <span>Logout</span>
+                </li>
+            </ul>
+        </nav>
 
-        <!-- Business Hours Tab -->
-        <div id="business-hours" class="tab-content">
-            <h2>Manage Business Hours</h2>
-            <!-- Business hours form will be inserted here -->
-        </div>
+        <main class="admin-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <h2>Dashboard Overview</h2>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Business Status</h3>
+                        <p>Current Status: <span id="current-status" class="status">Loading...</span></p>
+                        <p>Last Updated: <span id="hours-updated">Never</span></p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>About Page</h3>
+                        <p>Last Updated: <span id="about-updated">Never</span></p>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>News Articles</h3>
+                        <p>Tech News: <span id="tech-news-count">0</span> articles</p>
+                        <p>Crime News: <span id="crime-news-count">0</span> articles</p>
+                    </div>
+                </div>
+            </div>
 
-        <!-- Tech News Tab -->
-        <div id="tech-news" class="tab-content">
-            <h2>Manage Tech News</h2>
-            <!-- Tech news manager will be inserted here -->
-        </div>
+            <!-- About Page Tab -->
+            <div id="about" class="tab-content">
+                <h2>About Page Editor</h2>
+                <!-- Content will be loaded dynamically -->
+            </div>
 
-        <!-- Crime News Tab -->
-        <div id="crime-news" class="tab-content">
-            <h2>Manage Crime News</h2>
-            <!-- Crime news manager will be inserted here -->
-        </div>
+            <!-- Business Hours Tab -->
+            <div id="business-hours" class="tab-content">
+                <h2>Business Hours Editor</h2>
+                <!-- Content will be loaded dynamically -->
+            </div>
 
-        <!-- Settings Tab -->
-        <div id="settings" class="tab-content">
-            <h2>Website Settings</h2>
-            <!-- Settings form will be inserted here -->
-        </div>
+            <!-- Tech News Tab -->
+            <div id="tech-news" class="tab-content">
+                <h2>Tech News Manager</h2>
+                <!-- Content will be loaded dynamically -->
+            </div>
+
+            <!-- Crime News Tab -->
+            <div id="crime-news" class="tab-content">
+                <h2>Crime News Manager</h2>
+                <!-- Content will be loaded dynamically -->
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <h2>Website Settings</h2>
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </main>
     </div>
 
+    <script src="js/script.js"></script>
     <script src="js/admin.js"></script>
 </body>
 </html>
