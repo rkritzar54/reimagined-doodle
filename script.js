@@ -2,9 +2,8 @@
 const CURRENT_TIMESTAMP = '2025-03-26 03:02:04';
 const CURRENT_USER = 'rkritzar54';
 
-// Wait for the DOM to be fully loaded
+// Hamburger menu functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Hamburger Menu Functionality
     const hamburger = document.getElementById('hamburger');
     const mobileMenu = document.querySelector('.mobile-menu');
     
@@ -21,7 +20,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 mobileMenu.classList.remove('active');
             });
         });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
     }
+});
 
     // Modal functionality for articles
     const modal = document.getElementById('articleModal');
