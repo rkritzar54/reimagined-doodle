@@ -12,31 +12,31 @@ body, h1, h2, h3, h4, h5, h6, p, ul, li, a {
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* More modern font */
-    line-height: 1.7; /* Improved readability */
-    background-color: #f8f9fa; /* Lighter background */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.7;
+    background-color: #f4f6f8; /* Very light gray background */
     color: #333;
-    margin: 0; /* Ensure no default body margin */
+    margin: 0;
 }
 
 .container {
-    max-width: 1140px; /* Standard Bootstrap container width */
-    margin: 30px auto; /* More top/bottom margin */
+    max-width: 1140px;
+    margin: 30px auto;
     padding: 20px;
     background-color: #fff;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Softer shadow */
-    border-radius: 0.25rem; /* Slightly rounded corners */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem;
 }
 
 /* Header Styling */
 .main-header {
-    background-color: #343a40; /* Darker, more professional header */
+    background-color: #003366; /* Dark Blue Header */
     color: #fff;
     padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px; /* Space below header */
+    margin-bottom: 20px;
 }
 
 .logo-name {
@@ -51,7 +51,7 @@ body {
 }
 
 .logo-name h1 {
-    font-size: 1.75rem; /* Slightly larger logo name */
+    font-size: 1.75rem;
 }
 
 .main-nav ul {
@@ -67,16 +67,16 @@ body {
     color: #fff;
     display: block;
     padding: 10px 15px;
-    transition: color 0.3s ease; /* Smooth hover effect */
+    transition: color 0.3s ease;
 }
 
 .main-nav ul li a:hover {
-    color: #adb5bd; /* Lighter color on hover */
+    color: #ddd;
 }
 
 .main-nav ul li a.active {
     font-weight: bold;
-    color: #fff; /* Ensure active link is still white */
+    color: #fff;
 }
 
 /* Dropdown Styling */
@@ -84,8 +84,8 @@ body {
     position: absolute;
     top: 100%;
     left: 0;
-    background-color: #343a40;
-    border-top: 1px solid #495057;
+    background-color: #003366; /* Dark Blue Dropdown */
+    border-top: 1px solid #004d99;
     display: none;
     z-index: 10;
     border-radius: 0.25rem;
@@ -103,11 +103,11 @@ body {
 .dropdown-menu li a {
     padding: 10px 20px;
     display: block;
-    width: 200px; /* Adjust width as needed */
+    width: 200px;
 }
 
 .dropdown-menu li a:hover {
-    background-color: #495057;
+    background-color: #004d99;
 }
 
 .active-dropdown > a {
@@ -135,11 +135,11 @@ body {
 }
 
 .left-column {
-    flex: 5; /* Adjust proportions as needed */
+    flex: 5;
 }
 
 .right-column {
-    flex: 7; /* Adjust proportions as needed */
+    flex: 7;
 }
 
 .news-updates, .our-mission, .quick-links, .upcoming-events {
@@ -154,14 +154,14 @@ body {
     border-bottom: 2px solid #eee;
     padding-bottom: 10px;
     margin-bottom: 15px;
-    color: #343a40; /* Darker heading color */
+    color: #003366; /* Dark Blue Headings */
 }
 
 /* Pill Button */
 .pill-button {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #007bff; /* Keeping a blue for accent */
     color: #fff;
     border-radius: 20px;
     margin-right: 10px;
@@ -179,26 +179,33 @@ body {
 
 .rivers-links h3 {
     margin-top: 0;
-    margin-bottom: 10px; /* Add some space below the title */
-    color: #343a40;
-    display: block; /* Make the title take the full width */
-}
-
-.rivers-links .link-buttons {
-    margin-top: 10px;
+    margin-bottom: 10px;
+    color: #003366; /* Dark Blue Title */
+    display: block;
 }
 
 /* Vertical Button Layout */
 .rivers-links .link-buttons-vertical {
-    /* display: inline-block; Remove this */
-    margin-top: 0; /* Adjust top margin to be below the h3 */
+    margin-top: 0;
 }
 
 .rivers-links .link-buttons-vertical .pill-button {
-    display: block; /* Make buttons stack vertically */
+    display: block;
     margin-bottom: 10px;
-    margin-right: 0; /* Remove right margin for vertical stacking */
-    width: fit-content; /* Adjust width to content */
+    margin-right: 0;
+    width: fit-content;
+    background-color: #003366; /* Dark Blue Buttons */
+    border-radius: 5px; /* Slightly Rounded Corners */
+}
+
+.rivers-links .link-buttons-vertical .pill-button:hover {
+    background-color: #004d99;
+}
+
+.rivers-links .link-buttons-vertical .pill-button a {
+    color: #fff; /* White text for buttons */
+    display: block; /* Make the entire button clickable */
+    padding: 10px 15px; /* Add padding to the link inside the button */
 }
 
 .upcoming-events iframe {
@@ -207,7 +214,7 @@ body {
 
 /* Footer Styling */
 .main-footer {
-    background-color: #343a40;
+    background-color: #003366; /* Dark Blue Footer */
     color: #fff;
     padding: 30px 20px;
     margin-top: 40px;
@@ -219,7 +226,7 @@ body {
     max-width: 1140px;
     margin: 0 auto;
     padding-bottom: 20px;
-    border-bottom: 1px solid #495057;
+    border-bottom: 1px solid #004d99;
 }
 
 .footer-left, .footer-right {
@@ -244,12 +251,12 @@ body {
 }
 
 .social-links a:hover {
-    color: #adb5bd;
+    color: #ddd;
 }
 
 .copyright {
     text-align: center;
     padding-top: 20px;
-    color: #adb5bd;
+    color: #ddd;
     font-size: 0.9em;
 }
