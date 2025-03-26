@@ -355,7 +355,7 @@ function setupMobileNavigation() {
 // Business Hours Functions
 function updateBusinessStatus() {
     const now = new Date();
-    const currentDay = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
+    const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const currentHours = businessHours[currentDay];
     
     const statusIndicator = document.getElementById('currentStatus');
