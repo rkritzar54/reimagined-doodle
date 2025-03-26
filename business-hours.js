@@ -82,22 +82,14 @@ function updateTimeDisplay() {
 function convertEDTtoLocal(timeStr) {
     if (!timeStr) return '';
     
-    // Parse the input time
+    // Parse the 24-hour time
     const [hours, minutes] = timeStr.split(':').map(Number);
     
-    // Create date object for current day
-    const utcDate = new Date(CURRENT_TIMESTAMP);
-    const edtOffset = -4; // EDT is UTC-4
+    // Convert to 12-hour format with AM/PM
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
     
-    // Create EDT date with given hours/minutes
-    const edtDate = new Date(utcDate);
-    edtDate.setHours(hours - edtOffset, minutes, 0, 0);
-    
-    return edtDate.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-    });
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
 }
 
 function updateBusinessTable(hours) {
