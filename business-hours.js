@@ -42,6 +42,7 @@ function getBusinessHours() {
     };
 }
 
+// Updated Business Hours Functions
 function updatePublicDisplay() {
     const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
     const hours = getBusinessHours();
