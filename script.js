@@ -1,5 +1,5 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-26 02:50:15';
+const CURRENT_TIMESTAMP = '2025-03-26 02:56:04';
 const CURRENT_USER = 'rkritzar54';
 
 // Wait for DOM to be loaded
@@ -282,6 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button class="modal-close">&times;</button>
                     `;
                     modal.style.display = 'block';
+                    modal.classList.add('active');
                     document.body.classList.add('modal-open');
                 }
             });
@@ -290,16 +291,22 @@ document.addEventListener('DOMContentLoaded', function() {
         // Close modal when clicking the close button or outside the modal
         modal.addEventListener('click', function(e) {
             if (e.target === modal || e.target.classList.contains('modal-close')) {
-                modal.style.display = 'none';
-                document.body.classList.remove('modal-open');
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                }, 300);
             }
         });
 
         // Close modal when pressing ESC key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && modal.style.display === 'block') {
-                modal.style.display = 'none';
-                document.body.classList.remove('modal-open');
+                modal.classList.remove('active');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                }, 300);
             }
         });
 
@@ -310,64 +317,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Business Hours Functions
-    function updateBusinessStatus() {
-        const now = new Date();
-        const currentDay = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
-        const currentHours = businessHours[currentDay];
-        
-        const statusIndicator = document.getElementById('currentStatus');
-        const nextChangeSpan = document.getElementById('nextChange');
-        
-        if (!statusIndicator || !nextChangeSpan) return;
-
-        if (currentHours.closed) {
-            statusIndicator.classList.remove('open');
-            statusIndicator.classList.add('closed');
-            nextChangeSpan.textContent = 'Next Open: ' + getNextOpenDay(currentDay);
-        } else {
-            const currentTime = now.getHours() * 100 + now.getMinutes();
-            const openTime = parseInt(currentHours.open.replace(':', ''));
-            const closeTime = parseInt(currentHours.close.replace(':', ''));
-            
-            if (currentTime >= openTime && currentTime < closeTime) {
-                statusIndicator.classList.remove('closed');
-                statusIndicator.classList.add('open');
-                nextChangeSpan.textContent = 'Closes at ' + currentHours.close;
-            } else {
-                statusIndicator.classList.remove('open');
-                statusIndicator.classList.add('closed');
-                nextChangeSpan.textContent = currentTime < openTime ? 
-                    'Opens at ' + currentHours.open : 
-                    'Next Open: ' + getNextOpenDay(currentDay);
-            }
-        }
-
-        // Update current time display
-        const timeDisplay = document.getElementById('currentTime');
-        if (timeDisplay) {
-            timeDisplay.textContent = CURRENT_TIMESTAMP;
-        }
-    }
-
-    function getNextOpenDay(currentDay) {
-        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        let currentIndex = days.indexOf(currentDay);
-        let daysChecked = 0;
-        
-        while (daysChecked < 7) {
-            currentIndex = (currentIndex + 1) % 7;
-            if (!businessHours[days[currentIndex]].closed) {
-                return days[currentIndex].charAt(0).toUpperCase() + 
-                       days[currentIndex].slice(1) + 
-                       ' at ' + 
-                       businessHours[days[currentIndex]].open;
-            }
-            daysChecked++;
-        }
-        return 'Check back later';
-    }
-
-    // Initialize business hours update
     if (typeof businessHours !== 'undefined') {
         updateBusinessStatus();
         setInterval(updateBusinessStatus, 60000); // Update every minute
@@ -376,6 +325,64 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize booking system if present
     initializeBookingSystem();
 });
+
+// Business Hours Functions
+function updateBusinessStatus() {
+    const now = new Date();
+    const currentDay = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
+    const currentHours = businessHours[currentDay];
+    
+    const statusIndicator = document.getElementById('currentStatus');
+    const nextChangeSpan = document.getElementById('nextChange');
+    
+    if (!statusIndicator || !nextChangeSpan) return;
+
+    if (currentHours.closed) {
+        statusIndicator.classList.remove('open');
+        statusIndicator.classList.add('closed');
+        nextChangeSpan.textContent = 'Next Open: ' + getNextOpenDay(currentDay);
+    } else {
+        const currentTime = now.getHours() * 100 + now.getMinutes();
+        const openTime = parseInt(currentHours.open.replace(':', ''));
+        const closeTime = parseInt(currentHours.close.replace(':', ''));
+        
+        if (currentTime >= openTime && currentTime < closeTime) {
+            statusIndicator.classList.remove('closed');
+            statusIndicator.classList.add('open');
+            nextChangeSpan.textContent = 'Closes at ' + currentHours.close;
+        } else {
+            statusIndicator.classList.remove('open');
+            statusIndicator.classList.add('closed');
+            nextChangeSpan.textContent = currentTime < openTime ? 
+                'Opens at ' + currentHours.open : 
+                'Next Open: ' + getNextOpenDay(currentDay);
+        }
+    }
+
+    // Update current time display
+    const timeDisplay = document.getElementById('currentTime');
+    if (timeDisplay) {
+        timeDisplay.textContent = CURRENT_TIMESTAMP;
+    }
+}
+
+function getNextOpenDay(currentDay) {
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    let currentIndex = days.indexOf(currentDay);
+    let daysChecked = 0;
+    
+    while (daysChecked < 7) {
+        currentIndex = (currentIndex + 1) % 7;
+        if (!businessHours[days[currentIndex]].closed) {
+            return days[currentIndex].charAt(0).toUpperCase() + 
+                   days[currentIndex].slice(1) + 
+                   ' at ' + 
+                   businessHours[days[currentIndex]].open;
+        }
+        daysChecked++;
+    }
+    return 'Check back later';
+}
 
 // Booking system initialization
 function initializeBookingSystem() {
