@@ -13,14 +13,38 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     }
 
+    // Convert EDT time to user's local timezone
+    function convertFromEDT(timeStr) {
+        if (!timeStr) return '';
+        
+        // Create a date object for today with the EDT time
+        const today = new Date();
+        const [hours, minutes] = timeStr.split(':');
+        
+        // Create date in EDT
+        const edtDate = new Date(Date.UTC(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate(),
+            parseInt(hours) + 4, // EDT is UTC-4
+            parseInt(minutes)
+        ));
+
+        // Convert to local time
+        const localHours = edtDate.getHours().toString().padStart(2, '0');
+        const localMinutes = edtDate.getMinutes().toString().padStart(2, '0');
+        
+        return `${localHours}:${localMinutes}`;
+    }
+
     // Format time to 12-hour format
-    function formatTime(time) {
-        if (!time) return '';
-        const [hours, minutes] = time.split(':');
+    function formatTime(timeStr) {
+        if (!timeStr) return '';
+        const [hours, minutes] = timeStr.split(':');
         const hour = parseInt(hours);
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const hour12 = hour % 12 || 12;
-        return `${hour12}:${minutes} ${ampm}`;
+        return `${hour12}:${minutes.padStart(2, '0')} ${ampm}`;
     }
 
     // Update the business status
@@ -45,20 +69,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Update hours table
         if (hoursTableBody) {
-            hoursTableBody.innerHTML = Object.entries(businessHours).map(([day, hours]) => `
-                <tr class="${day === currentDay ? 'current-day' : ''}">
-                    <td>${day}</td>
-                    <td>${hours.closed ? 'Closed' : `${formatTime(hours.open)} - ${formatTime(hours.close)}`}</td>
-                </tr>
-            `).join('');
+            hoursTableBody.innerHTML = Object.entries(businessHours).map(([day, hours]) => {
+                const localOpenTime = convertFromEDT(hours.open);
+                const localCloseTime = convertFromEDT(hours.close);
+                return `
+                    <tr class="${day === currentDay ? 'current-day' : ''}">
+                        <td>${day}</td>
+                        <td>${hours.closed ? 'Closed' : `${formatTime(localOpenTime)} - ${formatTime(localCloseTime)}`}</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         // Determine if currently open
         const todayHours = businessHours[currentDay];
-        const currentHour = now.getHours();
-        const currentMinutes = now.getMinutes();
-        const currentTimeNumber = currentHour * 100 + currentMinutes;
-
         if (todayHours.closed) {
             businessStatusElement.textContent = 'Closed';
             businessStatusElement.className = 'closed';
@@ -69,26 +93,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 const nextDayIndex = (now.getDay() + daysChecked + 1) % 7;
                 nextDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][nextDayIndex];
                 if (!businessHours[nextDay].closed) {
-                    opensAtElement.textContent = `${formatTime(businessHours[nextDay].open)} ${nextDay}`;
+                    const localOpenTime = convertFromEDT(businessHours[nextDay].open);
+                    opensAtElement.textContent = `${formatTime(localOpenTime)} ${nextDay}`;
                     break;
                 }
                 daysChecked++;
             } while (daysChecked < 7);
         } else {
-            const [openHour, openMinutes] = todayHours.open.split(':');
-            const [closeHour, closeMinutes] = todayHours.close.split(':');
-            const openTimeNumber = parseInt(openHour) * 100 + parseInt(openMinutes);
-            const closeTimeNumber = parseInt(closeHour) * 100 + parseInt(closeMinutes);
+            const localOpenTime = convertFromEDT(todayHours.open);
+            const localCloseTime = convertFromEDT(todayHours.close);
+            
+            const [currentHour, currentMinute] = [now.getHours(), now.getMinutes()];
+            const currentTimeNumber = currentHour * 100 + currentMinute;
+            
+            const [openHour, openMinute] = localOpenTime.split(':').map(Number);
+            const [closeHour, closeMinute] = localCloseTime.split(':').map(Number);
+            
+            const openTimeNumber = openHour * 100 + openMinute;
+            const closeTimeNumber = closeHour * 100 + closeMinute;
 
             if (currentTimeNumber >= openTimeNumber && currentTimeNumber < closeTimeNumber) {
                 businessStatusElement.textContent = 'Open';
                 businessStatusElement.className = 'open';
-                opensAtElement.textContent = `Closes at ${formatTime(todayHours.close)}`;
+                opensAtElement.textContent = `Closes at ${formatTime(localCloseTime)}`;
             } else {
                 businessStatusElement.textContent = 'Closed';
                 businessStatusElement.className = 'closed';
                 if (currentTimeNumber < openTimeNumber) {
-                    opensAtElement.textContent = `Opens at ${formatTime(todayHours.open)} Today`;
+                    opensAtElement.textContent = `Opens at ${formatTime(localOpenTime)} Today`;
                 } else {
                     // Find next open day
                     let nextDay = currentDay;
@@ -97,7 +129,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         const nextDayIndex = (now.getDay() + daysChecked + 1) % 7;
                         nextDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][nextDayIndex];
                         if (!businessHours[nextDay].closed) {
-                            opensAtElement.textContent = `${formatTime(businessHours[nextDay].open)} ${nextDay}`;
+                            const nextDayOpenTime = convertFromEDT(businessHours[nextDay].open);
+                            opensAtElement.textContent = `${formatTime(nextDayOpenTime)} ${nextDay}`;
                             break;
                         }
                         daysChecked++;
