@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - My Portfolio</title>
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+    <header class="admin-header">
+        <div class="admin-header-content">
+            <div class="admin-title">Admin Portal</div>
+            <div class="admin-user">
+                <img src="https://github.com/your_github_username.png" alt="Your Avatar" class="admin-avatar">
+                <span class="admin-username">your_github_username</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <img src="../images/logo.png" alt="Logo" class="logo">
+                <h3>My Portfolio Admin</h3>
+            </div>
+            <ul class="admin-tabs">
+                <li class="tab-item active" data-tab="dashboard">Dashboard</li>
+                <li class="tab-item" data-tab="business-hours">Business Hours</li>
+                <li class="tab-item" data-tab="about">About Page</li>
+                <li class="tab-item" data-tab="tech-news">Tech News</li>
+                <li class="tab-item" data-tab="crime-news">Crime News</li>
+                <li class="tab-item" data-tab="settings">Settings</li>
+                <li class="tab-item" data-tab="logout">Logout</li>
+            </ul>
+        </aside>
+
+        <main class="admin-content">
+            <div class="tab-content active" id="dashboard">
+                <h2>Dashboard</h2>
+                <p>Welcome to the admin portal!</p>
+                </div>
+
+            <div class="tab-content" id="business-hours">
+                <h2>Manage Business Hours</h2>
+                </div>
+
+            <div class="tab-content" id="about">
+                <h2>Edit About Page</h2>
+                </div>
+
+            <div class="tab-content" id="tech-news">
+                <h2>Manage Tech News</h2>
+                </div>
+
+            <div class="tab-content" id="crime-news">
+                <h2>Manage Crime News</h2>
+                </div>
+
+            <div class="tab-content" id="settings">
+                <h2>Website Settings</h2>
+                </div>
+
+            <div class="tab-content" id="logout">
+                <h2>Logout</h2>
+                <p>Are you sure you want to logout?</p>
+                <button id="logout-btn">Logout</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="../js/admin.js"></script>
+</body>
+</html>
