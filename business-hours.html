@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Business Hours - My Portfolio</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/business-hours.css">
 </head>
 <body>
     <header class="main-header">
@@ -35,77 +34,51 @@
     </header>
 
     <div class="container">
-        <section class="business-hours-page">
+        <section class="business-hours-section">
             <h1>Business Hours</h1>
-            <div class="status-container">
-                <div class="status">
-                    <strong>Status:</strong> <span id="businessStatus"></span>
-                </div>
-                <div class="opens-at">
-                    <strong>Opens at:</strong> <span id="opensAt"></span>
-                </div>
+            <div class="business-status-container">
+                <h2>Current Status: <span id="business-status" class="status">Loading...</span></h2>
+                <p id="opens-at"></p>
             </div>
-            <div class="current-time-info">
-                <p><strong>Your Current Time:</strong> <span id="currentTime"></span></p>
-                <p><strong>Your Timezone:</strong> <span id="currentTimezone"></span></p>
+            <div class="hours-table-container">
+                <table class="hours-table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hours-table-body">
+                        <!-- Hours will be loaded dynamically -->
+                    </tbody>
+                </table>
             </div>
-
-            <h2>Hours of Operation (Your Local Time)</h2>
-            <table class="hours-table">
-                <thead>
-                    <tr>
-                        <th>Days</th>
-                        <th>Hours</th>
-                    </tr>
-                </thead>
-                <tbody id="hours-table-body">
-                </tbody>
-            </table>
-
-            <div class="holiday-hours-container">
-                <h2>Special Holiday Hours</h2>
-                <p id="holidayHours"></p>
-            </div>
-
-            <section class="book-appointment">
-                <h2>Book an Appointment</h2>
-                <p>Contact me to schedule an appointment.</p>
-            </section>
-
-            <section class="contact-info">
-                <h2>Contact Information</h2>
-                <p>Address: 123 Main Street, Anytown, USA</p>
-                <p>Phone: (555) 123-4567</p>
-                <p>Email: info@myportfolio.com</p>
-            </section>
         </section>
     </div>
 
     <footer class="main-footer">
-    <div class="footer-columns">
-        <div class="footer-left">
-            <h3 id="footer-title">My Portfolio</h3>
-            <p id="footer-address">Address: 123 Main Street, Anytown, USA</p>
-            <p id="footer-phone">Phone: (555) 123-4567</p>
-            <div class="social-links">
-                <a href="#" target="_blank" id="footer-facebook">Facebook</a>
-                <a href="#" target="_blank" id="footer-twitter">Twitter</a>
-                <a href="#" target="_blank" id="footer-linkedin">LinkedIn</a>
+        <div class="footer-columns">
+            <div class="footer-left">
+                <h3 id="footer-title">My Portfolio</h3>
+                <p id="footer-address">Address: 123 Main Street, Anytown, USA</p>
+                <p id="footer-phone">Phone: (555) 123-4567</p>
+                <div class="social-links">
+                    <a href="#" target="_blank" id="footer-facebook">Facebook</a>
+                    <a href="#" target="_blank" id="footer-twitter">Twitter</a>
+                    <a href="#" target="_blank" id="footer-linkedin">LinkedIn</a>
+                </div>
+            </div>
+            <div class="footer-right">
+                <h3>Our Mission:</h3>
+                <p>My mission is to provide high-quality services and innovative solutions to meet your needs and exceed your expectations.</p>
             </div>
         </div>
-        <div class="footer-right">
-            <h3>Our Mission:</h3>
-            <p>My mission is to provide high-quality services and innovative solutions to meet your needs and exceed your expectations.</p>
+        <div class="copyright">
+            <p>&copy; <span id="current-year">2025</span> <span id="footer-copyright-title">My Portfolio</span>. All rights reserved.</p>
         </div>
-    </div>
-    <div class="copyright">
-        <p>&copy; <span id="current-year">2025</span> <span id="footer-copyright-title">My Portfolio</span>. All rights reserved.</p>
-    </div>
-</footer>
+    </footer>
 
     <script src="js/script.js"></script>
-    <script src="js/business-hours.js"></script>
     <script src="js/content-loader.js"></script>
-    <script src="js/admin.js"></script>
 </body>
 </html>
