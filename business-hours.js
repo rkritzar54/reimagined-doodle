@@ -1,5 +1,5 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-26 03:50:09';
+const CURRENT_TIMESTAMP = '2025-03-26 02:06:45';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -54,7 +54,6 @@ function updatePublicDisplay() {
     updateBusinessStatus(hours);
 }
 
-// Time Display and Conversion Functions
 function updateTimeDisplay() {
     const timeElement = document.getElementById('currentTime');
     const zoneElement = document.getElementById('userTimeZone');
@@ -172,15 +171,20 @@ function updateBusinessStatus(hours) {
 
     const isOpen = checkIfOpen(hours);
     
+    // Update indicator
     statusIndicator.className = `status-indicator ${isOpen ? 'open' : 'closed'}`;
+    
+    // Update text
     statusText.textContent = isOpen ? 'OPEN' : 'CLOSED';
     
+    // Update next change time
     if (nextChangeElement) {
         nextChangeElement.textContent = getNextChangeTime(hours, isOpen);
     }
 }
 
 function checkIfOpen(hours) {
+    // Convert UTC to EDT
     const utcDate = new Date(CURRENT_TIMESTAMP);
     const edtOffset = -4; // EDT is UTC-4
     const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
@@ -228,6 +232,145 @@ function checkIfOpen(hours) {
 }
 
 function getNextChangeTime(hours, isOpen) {
+    // Convert UTC to EDT
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+    const today = edtDate.toISOString().split('T')[0];
+    
+    // Check if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holiday = settings.holidays.find(h => h.date === today);
+    
+    if (holiday) {
+        if (holiday.closed) {
+            return getNextOpeningTime(hours);
+        }
+        return isOpen ? `Closes at ${convertEDTtoLocal(holiday.close)}` : 
+                       `Opens at ${convertEDTtoLocal(holiday.open)}`;
+    }
+
+    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][edtDate.getDay()];
+    
+    if (isOpen) {
+        return `Closes at ${convertEDTtoLocal(hours[day].close)}`;
+    } else {
+        return `Opens ${getNextOpeningTime(hours)}`;
+    }
+}
+
+function updateBusinessTable(hours) {
+    const tableBody = document.getElementById('hoursTable');
+    if (!tableBody) return;
+
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    
+    // Convert UTC to EDT for current day calculation
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+    const currentDay = edtDate.getDay();
+    const today = edtDate.toISOString().split('T')[0];
+    
+    // Get holiday schedule if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holidayToday = settings.holidays.find(h => h.date === today);
+
+    const rows = days.map((day, index) => {
+        const schedule = hours[day];
+        const isToday = index === currentDay;
+        
+        let displayHours;
+        if (isToday && holidayToday) {
+            displayHours = holidayToday.closed ? 'Closed (Holiday)' : 
+                `${convertEDTtoLocal(holidayToday.open)} - ${convertEDTtoLocal(holidayToday.close)} (Holiday)`;
+        } else {
+            displayHours = schedule.closed ? 'Closed' : 
+                `${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
+        }
+        
+        return `
+            <tr${isToday ? ' class="today"' : ''}>
+                <td>${capitalize(day)}</td>
+                <td>${displayHours}</td>
+            </tr>
+        `;
+    });
+
+    tableBody.innerHTML = rows.join('');
+}
+
+function updateBusinessStatus(hours) {
+    const statusText = document.getElementById('openClosedText');
+    const statusIndicator = document.getElementById('currentStatus');
+    const nextChangeElement = document.getElementById('nextChange');
+    
+    if (!statusText || !statusIndicator) return;
+
+    const isOpen = checkIfOpen(hours);
+    
+    // Update indicator
+    statusIndicator.className = `status-indicator ${isOpen ? 'open' : 'closed'}`;
+    
+    // Update text
+    statusText.textContent = isOpen ? 'OPEN' : 'CLOSED';
+    
+    // Update next change time
+    if (nextChangeElement) {
+        nextChangeElement.textContent = getNextChangeTime(hours, isOpen);
+    }
+}
+
+function checkIfOpen(hours) {
+    // Convert UTC to EDT
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+    const today = edtDate.toISOString().split('T')[0];
+    
+    // Check if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holiday = settings.holidays.find(h => h.date === today);
+    
+    if (holiday) {
+        if (holiday.closed) return false;
+        
+        const currentTime = edtDate.getHours() * 60 + edtDate.getMinutes();
+        const [openHour, openMin] = holiday.open.split(':').map(Number);
+        const [closeHour, closeMin] = holiday.close.split(':').map(Number);
+        
+        let openMinutes = openHour * 60 + openMin;
+        let closeMinutes = closeHour * 60 + closeMin;
+        
+        if (closeMinutes < openMinutes) {
+            closeMinutes += 24 * 60;
+        }
+        
+        return currentTime >= openMinutes && currentTime < closeMinutes;
+    }
+
+    // Regular business hours check
+    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][edtDate.getDay()];
+    const schedule = hours[day];
+
+    if (schedule.closed) return false;
+
+    const currentTime = edtDate.getHours() * 60 + edtDate.getMinutes();
+    const [openHour, openMin] = schedule.open.split(':').map(Number);
+    const [closeHour, closeMin] = schedule.close.split(':').map(Number);
+
+    let openMinutes = openHour * 60 + openMin;
+    let closeMinutes = closeHour * 60 + closeMin;
+    
+    if (closeMinutes < openMinutes) {
+        closeMinutes += 24 * 60;
+    }
+
+    return currentTime >= openMinutes && currentTime < closeMinutes;
+}
+
+function getNextChangeTime(hours, isOpen) {
+    // Convert UTC to EDT
     const utcDate = new Date(CURRENT_TIMESTAMP);
     const edtOffset = -4; // EDT is UTC-4
     const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
@@ -256,7 +399,7 @@ function getNextChangeTime(hours, isOpen) {
 
 function getNextOpeningTime(hours) {
     // Convert UTC to EDT for date calculations
-    const utcDate = new Date(CURRENT_TIMESTAMP); // Updated timestamp: '2025-03-26 03:51:32'
+    const utcDate = new Date(CURRENT_TIMESTAMP);
     const edtOffset = -4; // EDT is UTC-4
     const now = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
     let checkDay = now.getDay();
@@ -371,7 +514,6 @@ function updateHolidayList(settings) {
     }
 }
 
-// Booking System Integration
 function initializeBookingSystem() {
     const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
     setupBookingForm(settings);
@@ -405,45 +547,230 @@ function setupBookingForm(settings) {
     }
 }
 
-// Event Listeners
-function setupEventListeners() {
-    const refreshButton = document.getElementById('refreshStatus');
-    if (refreshButton) {
-        refreshButton.addEventListener('click', () => {
-            updatePublicDisplay();
+function handleDateChange(event) {
+    const selectedDate = new Date(event.target.value);
+    const dateString = event.target.value;
+    const dayOfWeek = selectedDate.getDay();
+    const hours = getBusinessHours();
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    
+    const timeInput = document.getElementById('time');
+    const timeHelp = document.getElementById('timeHelp');
+    
+    if (!timeInput) return;
+
+    // Check if selected date is a holiday
+    const holiday = settings.holidays.find(h => h.date === dateString);
+    
+    if (holiday) {
+        if (holiday.closed) {
+            timeInput.disabled = true;
+            timeInput.value = '';
+            if (timeHelp) {
+                timeHelp.textContent = `${holiday.name} - Closed`;
+                timeHelp.className = 'text-danger';
+            }
+            return;
+        }
+        
+        timeInput.disabled = false;
+        timeInput.min = holiday.open;
+        timeInput.max = holiday.close;
+        
+        if (timeHelp) {
+            timeHelp.textContent = `${holiday.name} hours: ${convertEDTtoLocal(holiday.open)} - ${convertEDTtoLocal(holiday.close)}`;
+            timeHelp.className = 'text-info';
+        }
+        return;
+    }
+
+    // Regular business hours check
+    const schedule = hours[['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][dayOfWeek]];
+
+    if (schedule.closed) {
+        timeInput.disabled = true;
+        timeInput.value = '';
+        if (timeHelp) {
+            timeHelp.textContent = 'Closed on this day';
+            timeHelp.className = 'text-danger';
+        }
+        return;
+    }
+
+    timeInput.disabled = false;
+    timeInput.min = schedule.open;
+    timeInput.max = schedule.close;
+
+    if (timeHelp) {
+        timeHelp.textContent = `Business hours: ${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
+        timeHelp.className = 'text-info';
+    }
+}
+
+function setupBookingModal() {
+    const modal = document.getElementById('bookingModal');
+    const openBtn = document.getElementById('bookingButton');
+    const closeBtn = document.querySelector('.modal-close');
+    const form = document.getElementById('bookingForm');
+
+    if (openBtn) {
+        openBtn.addEventListener('click', () => {
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
         });
     }
 
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-            const modal = document.getElementById('bookingModal');
-            if (modal && modal.style.display === 'block') {
-                modal.style.display = 'none';
-                document.body.style.overflow = '';
-            }
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', handleBookingSubmission);
+    }
+
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
         }
     });
 }
 
-// Utility Functions
-function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
+function handleBookingSubmission(event) {
+    event.preventDefault();
+    
+    const formData = {
+        id: Date.now(),
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        service: document.getElementById('service').value,
+        notes: document.getElementById('notes').value,
+        status: 'pending',
+        submittedBy: CURRENT_USER,
+        submissionTime: CURRENT_TIMESTAMP
+    };
+
+    if (!validateBooking(formData)) return;
+
+    saveBooking(formData);
+    
+    event.target.reset();
+    document.getElementById('bookingModal').style.display = 'none';
+    document.body.style.overflow = '';
+    showNotification('Thank you! Your booking request has been submitted and is pending approval.', 'success');
 }
 
-function formatTimeRange(start, end) {
-    if (!start || !end) return 'Hours not set';
-    return `${convertEDTtoLocal(start)} - ${convertEDTtoLocal(end)}`;
+function validateBooking(booking) {
+    if (!booking.service) {
+        showNotification('Please select a service.', 'error');
+        return false;
+    }
+
+    // Convert UTC to EDT for validation
+    const selectedDay = new Date(booking.date).getDay();
+    const hours = getBusinessHours();
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    
+    // Check if booking date is a holiday
+    const holiday = settings.holidays.find(h => h.date === booking.date);
+    if (holiday) {
+        if (holiday.closed) {
+            showNotification(`Selected date (${holiday.name}) is not available for booking. Please choose another day.`, 'error');
+            return false;
+        }
+        
+        const [selectedHour, selectedMinute] = booking.time.split(':').map(Number);
+        const [openHour, openMinute] = holiday.open.split(':').map(Number);
+        const [closeHour, closeMinute] = holiday.close.split(':').map(Number);
+        
+        const selectedMinutes = selectedHour * 60 + selectedMinute;
+        const openMinutes = openHour * 60 + openMinute;
+        const closeMinutes = closeHour * 60 + closeMinute;
+        
+        if (selectedMinutes < openMinutes || selectedMinutes >= closeMinutes) {
+            showNotification(`Selected time is outside of holiday hours. Please choose a time between ${
+                convertEDTtoLocal(holiday.open)} and ${convertEDTtoLocal(holiday.close)}`, 'error');
+            return false;
+        }
+        return true;
+    }
+
+    // Regular business hours check
+    const schedule = hours[['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][selectedDay]];
+
+    if (schedule.closed) {
+        showNotification('Selected day is not available for booking. Please choose another day.', 'error');
+        return false;
+    }
+
+    const [selectedHour, selectedMinute] = booking.time.split(':').map(Number);
+    const [openHour, openMinute] = schedule.open.split(':').map(Number);
+    const [closeHour, closeMinute] = schedule.close.split(':').map(Number);
+
+    const selectedMinutes = selectedHour * 60 + selectedMinute;
+    const openMinutes = openHour * 60 + openMinute;
+    const closeMinutes = closeHour * 60 + closeMinute;
+
+    if (selectedMinutes < openMinutes || selectedMinutes >= closeMinutes) {
+        showNotification(`Selected time is outside of business hours. Please choose a time between ${
+            convertEDTtoLocal(schedule.open)} and ${convertEDTtoLocal(schedule.close)}`, 'error');
+        return false;
+    }
+
+    return true;
 }
 
-function isToday(date) {
-    const utcDate = new Date(CURRENT_TIMESTAMP);
-    const edtOffset = -4; // EDT is UTC-4
-    const today = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
-    const checkDate = new Date(date);
-    return today.toISOString().split('T')[0] === checkDate.toISOString().split('T')[0];
+function saveBooking(booking) {
+    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    bookings.push(booking);
+    localStorage.setItem('bookings', JSON.stringify(bookings));
+
+    // Add to activity log
+    const activities = JSON.parse(localStorage.getItem('activities') || '[]');
+    activities.unshift({
+        timestamp: CURRENT_TIMESTAMP,
+        action: 'New Booking',
+        description: `Booking request from ${booking.name} for ${booking.service} on ${booking.date} at ${convertEDTtoLocal(booking.time)}`,
+        user: CURRENT_USER
+    });
+    localStorage.setItem('activities', JSON.stringify(activities.slice(0, 50)));
 }
 
-// Default Settings
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-message">${message}</span>
+            <button class="notification-close">&times;</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => notification.classList.add('show'), 10);
+    
+    // Auto-dismiss after 5 seconds
+    const dismissTimeout = setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 5000);
+    
+    // Allow manual dismissal
+    notification.querySelector('.notification-close').addEventListener('click', () => {
+        clearTimeout(dismissTimeout);
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    });
+}
+
 function getDefaultSettings() {
     return {
         businessInfo: {
@@ -506,6 +833,66 @@ function getDefaultSettings() {
             bufferBetweenBookings: 15
         }
     };
+}
+
+function setupEventListeners() {
+    const refreshButton = document.getElementById('refreshStatus');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', () => {
+            updatePublicDisplay();
+        });
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('bookingModal');
+            if (modal && modal.style.display === 'block') {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
+    });
+
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+        const inputs = bookingForm.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('invalid', (event) => {
+                event.preventDefault();
+                showNotification(`Please check the ${input.name} field`, 'error');
+            });
+        });
+    }
+}
+
+// Utility functions
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function formatDateTime(date) {
+    return new Date(date).toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
+function isToday(date) {
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const today = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+    const checkDate = new Date(date);
+    return today.toISOString().split('T')[0] === checkDate.toISOString().split('T')[0];
+}
+
+function formatTimeRange(start, end) {
+    if (!start || !end) return 'Hours not set';
+    return `${convertEDTtoLocal(start)} - ${convertEDTtoLocal(end)}`;
 }
 
 // Initialize everything when the script loads
