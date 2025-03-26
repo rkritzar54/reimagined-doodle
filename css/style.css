@@ -12,28 +12,31 @@ body, h1, h2, h3, h4, h5, h6, p, ul, li, a {
 }
 
 body {
-    font-family: sans-serif;
-    line-height: 1.6;
-    background-color: #f4f4f4;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* More modern font */
+    line-height: 1.7; /* Improved readability */
+    background-color: #f8f9fa; /* Lighter background */
     color: #333;
+    margin: 0; /* Ensure no default body margin */
 }
 
 .container {
-    max-width: 1200px;
-    margin: 20px auto;
+    max-width: 1140px; /* Standard Bootstrap container width */
+    margin: 30px auto; /* More top/bottom margin */
     padding: 20px;
     background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Softer shadow */
+    border-radius: 0.25rem; /* Slightly rounded corners */
 }
 
 /* Header Styling */
 .main-header {
-    background-color: #333;
+    background-color: #343a40; /* Darker, more professional header */
     color: #fff;
-    padding: 10px 20px;
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 20px; /* Space below header */
 }
 
 .logo-name {
@@ -42,9 +45,13 @@ body {
 }
 
 .logo {
-    width: 50px;
-    height: 50px;
-    margin-right: 10px;
+    width: 60px;
+    height: 60px;
+    margin-right: 15px;
+}
+
+.logo-name h1 {
+    font-size: 1.75rem; /* Slightly larger logo name */
 }
 
 .main-nav ul {
@@ -52,7 +59,7 @@ body {
 }
 
 .main-nav ul li {
-    margin-left: 20px;
+    margin-left: 25px;
     position: relative;
 }
 
@@ -60,10 +67,16 @@ body {
     color: #fff;
     display: block;
     padding: 10px 15px;
+    transition: color 0.3s ease; /* Smooth hover effect */
+}
+
+.main-nav ul li a:hover {
+    color: #adb5bd; /* Lighter color on hover */
 }
 
 .main-nav ul li a.active {
     font-weight: bold;
+    color: #fff; /* Ensure active link is still white */
 }
 
 /* Dropdown Styling */
@@ -71,10 +84,12 @@ body {
     position: absolute;
     top: 100%;
     left: 0;
-    background-color: #333;
-    border-top: 1px solid #555;
+    background-color: #343a40;
+    border-top: 1px solid #495057;
     display: none;
     z-index: 10;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 
 .dropdown:hover .dropdown-menu {
@@ -86,13 +101,13 @@ body {
 }
 
 .dropdown-menu li a {
-    padding: 10px 15px;
+    padding: 10px 20px;
     display: block;
-    width: 150px; /* Adjust width as needed */
+    width: 200px; /* Adjust width as needed */
 }
 
 .dropdown-menu li a:hover {
-    background-color: #555;
+    background-color: #495057;
 }
 
 .active-dropdown > a {
@@ -100,25 +115,46 @@ body {
 }
 
 /* Hero Section */
+.hero {
+    margin-bottom: 30px;
+}
+
 .hero-image {
     width: 100%;
     height: auto;
     display: block;
-    margin-bottom: 20px;
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 }
 
 /* Content Columns */
 .content-columns {
     display: flex;
-    gap: 20px;
+    gap: 30px;
+    margin-bottom: 30px;
 }
 
 .left-column {
-    flex: 2;
+    flex: 7; /* Adjust proportions as needed */
 }
 
 .right-column {
-    flex: 1;
+    flex: 5; /* Adjust proportions as needed */
+}
+
+.news-updates, .our-mission, .quick-links, .upcoming-events {
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
+}
+
+.news-updates h2, .our-mission h2, .quick-links h2, .upcoming-events h2 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    color: #343a40; /* Darker heading color */
 }
 
 /* Pill Button */
@@ -130,10 +166,21 @@ body {
     border-radius: 20px;
     margin-right: 10px;
     margin-bottom: 10px;
+    transition: background-color 0.3s ease;
 }
 
 .pill-button:hover {
     background-color: #0056b3;
+}
+
+.rivers-links {
+    margin-top: 15px;
+}
+
+.rivers-links h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #343a40;
 }
 
 .rivers-links .link-buttons {
@@ -142,33 +189,49 @@ body {
 
 /* Footer Styling */
 .main-footer {
-    background-color: #333;
+    background-color: #343a40;
     color: #fff;
-    padding: 20px;
-    margin-top: 30px;
+    padding: 30px 20px;
+    margin-top: 40px;
 }
 
 .footer-columns {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    max-width: 1140px;
+    margin: 0 auto;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #495057;
 }
 
 .footer-left, .footer-right {
     flex: 1;
 }
 
+/* Corrected Footer Order */
+.footer-left h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
 .footer-right h3 {
     margin-top: 0;
+    margin-bottom: 10px;
 }
 
 .social-links a {
     color: #fff;
-    margin-right: 10px;
+    margin-right: 15px;
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: #adb5bd;
 }
 
 .copyright {
     text-align: center;
-    padding-top: 10px;
-    border-top: 1px solid #555;
+    padding-top: 20px;
+    color: #adb5bd;
+    font-size: 0.9em;
 }
