@@ -130,9 +130,8 @@ function loadBusinessHours() {
         
         if (openCheckbox && startInput && endInput) {
             openCheckbox.checked = !schedule.closed;
-            // Show times in 12-hour format for display
-            startInput.value = schedule.open;  // Keep 24-hour format for input[type="time"]
-            endInput.value = schedule.close;   // Keep 24-hour format for input[type="time"]
+            startInput.value = schedule.open;
+            endInput.value = schedule.close;
             startInput.disabled = schedule.closed;
             endInput.disabled = schedule.closed;
         }
@@ -150,7 +149,6 @@ function saveBusinessHours(e) {
         const openCheckbox = this.querySelector(`[name="${day}-open"]`);
         
         hours[day] = {
-            // Time inputs are already in 24-hour format
             open: startInput.value,
             close: endInput.value,
             closed: !openCheckbox.checked
@@ -162,9 +160,7 @@ function saveBusinessHours(e) {
     showNotification('Business hours saved successfully!');
 }
 
-// Time conversion functions
 function formatDisplayTime(time24) {
-    // Converts 24-hour time (13:00) to 12-hour time (1:00 PM)
     if (!time24) return '';
     
     const [hours, minutes] = time24.split(':').map(Number);
@@ -175,7 +171,6 @@ function formatDisplayTime(time24) {
 }
 
 function convertTo24Hour(time12) {
-    // Converts 12-hour time (1:00 PM) to 24-hour time (13:00)
     if (!time12) return '';
     
     const [time, period] = time12.split(' ');
@@ -203,13 +198,11 @@ function initializeSettings() {
 function loadSettings() {
     const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
     
-    // Load business info
     Object.entries(settings.businessInfo).forEach(([key, value]) => {
         const input = document.querySelector(`[name="${key}"]`);
         if (input) input.value = value;
     });
 
-    // Load other settings
     loadSocialMedia(settings.socialMedia);
     loadHolidays(settings.holidays);
     loadServices(settings.bookingSettings.services);
@@ -388,7 +381,6 @@ function addHolidayItem(holiday = {}, index) {
 
     holidayList.appendChild(item);
 
-    // Setup event listeners
     const closedCheckbox = item.querySelector(`[name="holiday-closed-${index}"]`);
     const timeInputs = item.querySelector('.time-inputs');
     const openInput = item.querySelector(`[name="holiday-open-${index}"]`);
@@ -407,10 +399,8 @@ function addHolidayItem(holiday = {}, index) {
 function convertEDTToLocal(edtTimeStr) {
     if (!edtTimeStr) return '';
     
-    // Parse the 24-hour time
     const [hours, minutes] = edtTimeStr.split(':').map(Number);
     
-    // Convert to 12-hour format with AM/PM
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours % 12 || 12;
     
@@ -420,40 +410,16 @@ function convertEDTToLocal(edtTimeStr) {
 function convertLocalToEDT(localTimeStr) {
     if (!localTimeStr) return '';
     
-    // Split time and period (e.g., "10:00 AM" -> ["10:00", "AM"])
     const [time, period] = localTimeStr.split(' ');
     let [hours, minutes] = time.split(':').map(Number);
     
-    // Convert to 24-hour format
     if (period === 'PM' && hours !== 12) {
         hours += 12;
-    } else if (period === 'AM' && hours === 12) {
+    } else if ( period === 'AM' && hours === 12) {
         hours = 0;
     }
     
-    // Return in 24-hour format
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-}
-
-// Convert local time to EDT
-function convertLocalToEDT(localTimeStr) {
-    if (!localTimeStr) return '';
-    
-    // Create a date object at midnight UTC
-    const date = new Date();
-    date.setUTCHours(0, 0, 0, 0);
-    
-    // Parse local time
-    const [hours, minutes] = localTimeStr.split(':').map(Number);
-    
-    // Set local time
-    date.setHours(hours, minutes);
-    
-    // Convert to EDT (UTC-4)
-    const edtHours = (24 + date.getUTCHours() - 4) % 24;
-    
-    // Format in 24-hour time
-    return `${edtHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
 // Booking Management
@@ -531,7 +497,6 @@ function initializeDashboard() {
     updateDashboardStats();
     loadRecentActivity();
     
-    // Set up auto-refresh
     setInterval(() => {
         if (document.querySelector('#dashboard.active')) {
             updateDashboardStats();
@@ -561,7 +526,6 @@ function updateDashboardStats() {
     });
 }
 
-// Helper Functions
 function getDefaultBusinessHours() {
     return {
         sunday: { open: '09:00', close: '17:00', closed: true },
@@ -756,7 +720,6 @@ function checkBusinessStatus() {
     const now = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
     const today = now.toISOString().split('T')[0];
     
-    // Check if today is a holiday
     const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
     const holiday = settings.holidays.find(h => h.date === today);
     
@@ -777,7 +740,6 @@ function checkBusinessStatus() {
         return currentTime >= openMinutes && currentTime < closeMinutes;
     }
 
-    // Regular business hours check
     const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
     const schedule = hours[day];
     
