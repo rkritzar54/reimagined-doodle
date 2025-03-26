@@ -259,6 +259,144 @@ function getNextChangeTime(hours, isOpen) {
     }
 }
 
+function updateBusinessTable(hours) {
+    const tableBody = document.getElementById('hoursTable');
+    if (!tableBody) return;
+
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    
+    // Convert UTC to EDT for current day calculation
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+    const currentDay = edtDate.getDay();
+    const today = edtDate.toISOString().split('T')[0];
+    
+    // Get holiday schedule if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holidayToday = settings.holidays.find(h => h.date === today);
+
+    const rows = days.map((day, index) => {
+        const schedule = hours[day];
+        const isToday = index === currentDay;
+        
+        let displayHours;
+        if (isToday && holidayToday) {
+            displayHours = holidayToday.closed ? 'Closed (Holiday)' : 
+                `${convertEDTtoLocal(holidayToday.open)} - ${convertEDTtoLocal(holidayToday.close)} (Holiday)`;
+        } else {
+            displayHours = schedule.closed ? 'Closed' : 
+                `${convertEDTtoLocal(schedule.open)} - ${convertEDTtoLocal(schedule.close)}`;
+        }
+        
+        return `
+            <tr${isToday ? ' class="today"' : ''}>
+                <td>${capitalize(day)}</td>
+                <td>${displayHours}</td>
+            </tr>
+        `;
+    });
+
+    tableBody.innerHTML = rows.join('');
+}
+
+function updateBusinessStatus(hours) {
+    const statusText = document.getElementById('openClosedText');
+    const statusIndicator = document.getElementById('currentStatus');
+    const nextChangeElement = document.getElementById('nextChange');
+    
+    if (!statusText || !statusIndicator) return;
+
+    const isOpen = checkIfOpen(hours);
+    
+    // Update indicator
+    statusIndicator.className = `status-indicator ${isOpen ? 'open' : 'closed'}`;
+    
+    // Update text
+    statusText.textContent = isOpen ? 'OPEN' : 'CLOSED';
+    
+    // Update next change time
+    if (nextChangeElement) {
+        nextChangeElement.textContent = getNextChangeTime(hours, isOpen);
+    }
+}
+
+function checkIfOpen(hours) {
+    // Convert UTC to EDT
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+    const today = edtDate.toISOString().split('T')[0];
+    
+    // Check if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holiday = settings.holidays.find(h => h.date === today);
+    
+    if (holiday) {
+        if (holiday.closed) return false;
+        
+        const currentTime = edtDate.getHours() * 60 + edtDate.getMinutes();
+        const [openHour, openMin] = holiday.open.split(':').map(Number);
+        const [closeHour, closeMin] = holiday.close.split(':').map(Number);
+        
+        let openMinutes = openHour * 60 + openMin;
+        let closeMinutes = closeHour * 60 + closeMin;
+        
+        if (closeMinutes < openMinutes) {
+            closeMinutes += 24 * 60;
+        }
+        
+        return currentTime >= openMinutes && currentTime < closeMinutes;
+    }
+
+    // Regular business hours check
+    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][edtDate.getDay()];
+    const schedule = hours[day];
+
+    if (schedule.closed) return false;
+
+    const currentTime = edtDate.getHours() * 60 + edtDate.getMinutes();
+    const [openHour, openMin] = schedule.open.split(':').map(Number);
+    const [closeHour, closeMin] = schedule.close.split(':').map(Number);
+
+    let openMinutes = openHour * 60 + openMin;
+    let closeMinutes = closeHour * 60 + closeMin;
+    
+    if (closeMinutes < openMinutes) {
+        closeMinutes += 24 * 60;
+    }
+
+    return currentTime >= openMinutes && currentTime < closeMinutes;
+}
+
+function getNextChangeTime(hours, isOpen) {
+    // Convert UTC to EDT
+    const utcDate = new Date(CURRENT_TIMESTAMP);
+    const edtOffset = -4; // EDT is UTC-4
+    const edtDate = new Date(utcDate.getTime() + (edtOffset * 60 * 60 * 1000));
+    const today = edtDate.toISOString().split('T')[0];
+    
+    // Check if today is a holiday
+    const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
+    const holiday = settings.holidays.find(h => h.date === today);
+    
+    if (holiday) {
+        if (holiday.closed) {
+            return getNextOpeningTime(hours);
+        }
+        return isOpen ? `Closes at ${convertEDTtoLocal(holiday.close)}` : 
+                       `Opens at ${convertEDTtoLocal(holiday.open)}`;
+    }
+
+    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][edtDate.getDay()];
+    
+    if (isOpen) {
+        return `Closes at ${convertEDTtoLocal(hours[day].close)}`;
+    } else {
+        return `Opens ${getNextOpeningTime(hours)}`;
+    }
+}
+
 function getNextOpeningTime(hours) {
     // Convert UTC to EDT for date calculations
     const utcDate = new Date(CURRENT_TIMESTAMP);
@@ -401,7 +539,7 @@ function setupBookingForm(settings) {
         const minDate = new Date(edtDate);
         minDate.setDate(minDate.getDate() + 1);
         const maxDate = new Date(edtDate);
-        maxDate.setDate(edtDate.getDate() + settings.bookingSettings.maxFuture);
+        maxDate.setDate(maxDate.getDate() + settings.bookingSettings.maxFuture);
 
         dateInput.min = minDate.toISOString().split('T')[0];
         dateInput.max = maxDate.toISOString().split('T')[0];
@@ -534,10 +672,12 @@ function validateBooking(booking) {
         return false;
     }
 
+    // Convert UTC to EDT for validation
     const selectedDay = new Date(booking.date).getDay();
     const hours = getBusinessHours();
     const settings = JSON.parse(localStorage.getItem('businessSettings')) || getDefaultSettings();
     
+    // Check if booking date is a holiday
     const holiday = settings.holidays.find(h => h.date === booking.date);
     if (holiday) {
         if (holiday.closed) {
@@ -561,6 +701,7 @@ function validateBooking(booking) {
         return true;
     }
 
+    // Regular business hours check
     const schedule = hours[['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][selectedDay]];
 
     if (schedule.closed) {
@@ -590,6 +731,7 @@ function saveBooking(booking) {
     bookings.push(booking);
     localStorage.setItem('bookings', JSON.stringify(bookings));
 
+    // Add to activity log
     const activities = JSON.parse(localStorage.getItem('activities') || '[]');
     activities.unshift({
         timestamp: CURRENT_TIMESTAMP,
@@ -612,13 +754,16 @@ function showNotification(message, type = 'info') {
     
     document.body.appendChild(notification);
     
+    // Trigger animation
     setTimeout(() => notification.classList.add('show'), 10);
     
+    // Auto-dismiss after 5 seconds
     const dismissTimeout = setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => notification.remove(), 300);
     }, 5000);
     
+    // Allow manual dismissal
     notification.querySelector('.notification-close').addEventListener('click', () => {
         clearTimeout(dismissTimeout);
         notification.classList.remove('show');
@@ -720,6 +865,7 @@ function setupEventListeners() {
     }
 }
 
+// Utility functions
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -748,3 +894,25 @@ function formatTimeRange(start, end) {
     if (!start || !end) return 'Hours not set';
     return `${convertEDTtoLocal(start)} - ${convertEDTtoLocal(end)}`;
 }
+
+// Initialize everything when the script loads
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        initializeBusinessHours();
+        initializeBookingSystem();
+        updatePublicDisplay();
+        setupEventListeners();
+    } catch (error) {
+        console.error('Initialization error:', error);
+        showNotification('There was an error initializing the system. Please refresh the page.', 'error');
+    }
+});
+
+// Auto-refresh status every minute
+setInterval(() => {
+    try {
+        updatePublicDisplay();
+    } catch (error) {
+        console.error('Auto-refresh error:', error);
+    }
+}, 60000);
