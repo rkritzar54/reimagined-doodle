@@ -12,7 +12,8 @@
     flex: 1;
     padding: 15px;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 0.25rem;
+    background-color: #f9f9f9;
 }
 
 #businessStatus.open {
@@ -29,7 +30,8 @@
     margin-bottom: 20px;
     padding: 15px;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 0.25rem;
+    background-color: #f9f9f9;
 }
 
 .hours-table {
@@ -40,38 +42,60 @@
 
 .hours-table th, .hours-table td {
     border: 1px solid #ddd;
-    padding: 10px;
+    padding: 12px;
     text-align: left;
 }
 
 .hours-table th {
-    background-color: #f0f0f0;
+    background-color: #e9ecef;
+    font-weight: bold;
 }
 
 .hours-table tr.current-day {
-    background-color: #e0f7fa; /* Light blue to highlight */
+    background-color: #f0fff0; /* Very light green to highlight */
     font-weight: bold;
 }
 
 .holiday-hours-container {
-    background-color: #f9f9f9;
+    background-color: #fff;
     padding: 20px;
-    border: 1px solid #eee;
-    border-radius: 5px;
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
     margin-bottom: 30px;
+}
+
+.holiday-hours-container h2 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    color: #343a40;
 }
 
 .book-appointment {
     margin-bottom: 30px;
     padding: 20px;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 0.25rem;
     background-color: #fff;
+}
+
+.book-appointment h2 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    color: #343a40;
 }
 
 .contact-info {
     padding: 20px;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 0.25rem;
     background-color: #fff;
+}
+
+.contact-info h2 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    color: #343a40;
 }
