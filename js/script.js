@@ -3,11 +3,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Restore dropdown state from localStorage
     dropdowns.forEach((dropdown, index) => {
-        const savedState = localStorage.getItem(`dropdown-${index}`);
         const menu = dropdown.querySelector('.dropdown-menu');
+        const savedState = localStorage.getItem(`dropdown-${index}`);
 
         if (menu && savedState === 'open') {
-            menu.style.display = 'block';
+            dropdown.classList.add('open'); // Add a CSS class to indicate it's open
         }
     });
 
@@ -17,24 +17,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
         dropdown.addEventListener('mouseenter', function () {
             if (menu) {
-                menu.style.display = 'block';
+                dropdown.classList.add('open'); // Add CSS class
                 localStorage.setItem(`dropdown-${index}`, 'open'); // Save state
             }
         });
 
         dropdown.addEventListener('mouseleave', function () {
             if (menu) {
-                menu.style.display = 'none';
+                dropdown.classList.remove('open'); // Remove CSS class
                 localStorage.setItem(`dropdown-${index}`, 'closed'); // Save state
             }
         });
 
         // Optional: Handle clicks for mobile
-        dropdown.addEventListener('click', function () {
+        dropdown.addEventListener('click', function (event) {
+            // Prevent default action and toggle menu for mobile
+            event.preventDefault();
             if (menu) {
-                const isVisible = menu.style.display === 'block';
-                menu.style.display = isVisible ? 'none' : 'block';
-                localStorage.setItem(`dropdown-${index}`, isVisible ? 'closed' : 'open'); // Save state
+                const isOpen = dropdown.classList.contains('open');
+                if (isOpen) {
+                    dropdown.classList.remove('open');
+                    localStorage.setItem(`dropdown-${index}`, 'closed');
+                } else {
+                    dropdown.classList.add('open');
+                    localStorage.setItem(`dropdown-${index}`, 'open');
+                }
             }
         });
     });
