@@ -31,9 +31,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize settings
     initializeSettings();
 
-    // Initialize time display
+    // Initialize time display with exact format
     initializeTimeDisplay();
 });
+
+// Time display function with exact format
+function initializeTimeDisplay() {
+    const timeDisplay = document.createElement('div');
+    timeDisplay.className = 'time-display';
+    
+    function updateDisplay() {
+        const now = new Date();
+        const year = now.getUTCFullYear();
+        const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(now.getUTCDate()).padStart(2, '0');
+        const hours = String(now.getUTCHours()).padStart(2, '0');
+        const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+        const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+        
+        const timeStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+        timeDisplay.innerHTML = `
+            <div class="current-time">Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): ${timeStr}</div>
+            <div class="current-user">Current User's Login: rkritzar54</div>
+        `;
+    }
+
+    updateDisplay();
+    document.querySelector('.admin-header').appendChild(timeDisplay);
+    setInterval(updateDisplay, 1000);
+}
 
 // Dashboard update function
 function updateDashboardStatus() {
@@ -53,8 +80,10 @@ function updateDashboardStatus() {
         if (currentStatus) {
             if (todayHours.closed) {
                 currentStatus.textContent = 'Closed Today';
+                currentStatus.className = 'status closed';
             } else {
                 currentStatus.textContent = `Open ${todayHours.open} - ${todayHours.close}`;
+                currentStatus.className = 'status open';
             }
         }
         
@@ -90,37 +119,6 @@ function updateAdminUser() {
         adminUsername.textContent = 'rkritzar54';
         adminAvatar.src = 'https://github.com/rkritzar54.png';
     }
-}
-
-// Time display function with exact format
-function getFormattedDateTime() {
-    const now = new Date();
-    const year = now.getUTCFullYear();
-    const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(now.getUTCDate()).padStart(2, '0');
-    const hours = String(now.getUTCHours()).padStart(2, '0');
-    const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-    const seconds = String(now.getUTCSeconds()).padStart(2, '0');
-    
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
-
-function initializeTimeDisplay() {
-    const timeDisplay = document.createElement('div');
-    timeDisplay.className = 'time-display';
-    
-    function updateDisplay() {
-        timeDisplay.innerHTML = `
-            <div class="current-time">Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): ${getFormattedDateTime()}</div>
-            <div class="current-user">Current User's Login: rkritzar54</div>
-        `;
-    }
-    
-    updateDisplay();
-    document.querySelector('.admin-header-content').appendChild(timeDisplay);
-    
-    // Update time every second
-    setInterval(updateDisplay, 1000);
 }
 
 // Tab switching functionality
@@ -159,15 +157,17 @@ function initializeContentEditors() {
         aboutSection.appendChild(aboutEditor);
         
         // Load existing content
-        const savedAboutContent = contentStorage.get('about-content');
-        if (savedAboutContent) {
+        const savedContent = contentStorage.get('about-content');
+        if (savedContent) {
             const textarea = aboutEditor.querySelector('textarea');
-            textarea.value = savedAboutContent;
-            
-            // Update preview if it exists
-            const preview = aboutEditor.querySelector('.editor-preview');
-            if (preview) {
-                preview.innerHTML = savedAboutContent;
+            if (textarea) {
+                textarea.value = savedContent;
+                
+                // Update preview if it exists
+                const preview = aboutEditor.querySelector('.editor-preview');
+                if (preview) {
+                    preview.innerHTML = savedContent;
+                }
             }
         }
     }
@@ -220,7 +220,6 @@ function createEditor(id, title) {
                 replacement +
                 textarea.value.substring(textarea.selectionEnd);
             
-            // Update preview
             preview.innerHTML = textarea.value;
         });
     });
@@ -234,7 +233,7 @@ function createEditor(id, title) {
     const saveBtn = container.querySelector('.save-btn');
     saveBtn.addEventListener('click', () => {
         contentStorage.save(id, textarea.value);
-        contentStorage.save('about-last-updated', new Date().toISOString());
+        contentStorage.save(`${id}-last-updated`, new Date().toISOString());
         updateDashboardStatus();
         showNotification('Content saved successfully!');
     });
@@ -275,7 +274,6 @@ function createBusinessHourInput(day) {
     const dayDiv = document.createElement('div');
     dayDiv.className = 'business-hour-item';
 
-    // Load saved hours for this day
     const savedHours = contentStorage.get('business-hours') || {};
     const dayHours = savedHours[day] || { open: '09:00', close: '17:00', closed: false };
 
@@ -295,7 +293,9 @@ function createBusinessHourInput(day) {
     const timeInputs = dayDiv.querySelectorAll('.time-input');
     
     checkbox.addEventListener('change', () => {
-        timeInputs.forEach(input => input.disabled = checkbox.checked);
+        timeInputs.forEach(input => {
+            input.disabled = checkbox.checked;
+        });
     });
 
     return dayDiv;
@@ -360,7 +360,7 @@ function initializeNewsSection(id, title) {
     const newsForm = document.createElement('form');
     newsForm.className = 'news-form';
     newsForm.innerHTML = `
-        <h3>Add New Article</h3>
+        <h3>Add New ${title}</h3>
         <input type="text" name="title" placeholder="Article Title" required>
         <input type="text" name="category" placeholder="Category">
         <textarea name="content" placeholder="Article Content" required></textarea>
@@ -403,8 +403,7 @@ function initializeNewsSection(id, title) {
 }
 
 function loadArticles(container, articles) {
-    const articlesList = container.querySelector('.articles-list') || container;
-    articlesList.innerHTML = `
+    container.innerHTML = `
         <h3>Published Articles</h3>
         ${articles.map(article => `
             <div class="news-item">
@@ -412,29 +411,27 @@ function loadArticles(container, articles) {
                     <h4>${article.title}</h4>
                     <small>${new Date(article.date).toLocaleDateString()}</small>
                     <p>${article.content.substring(0, 100)}...</p>
+                    ${article.category ? `<span class="category-tag">${article.category}</span>` : ''}
                 </div>
-                <button class="btn btn-danger" onclick="deleteArticle(${article.id}, '${article.title}')">Delete</button>
+                <button class="btn btn-danger" onclick="deleteArticle(${article.id}, '${article.title}', '${article.category}')">Delete</button>
             </div>
         `).join('')}
     `;
 }
 
-function deleteArticle(id, title) {
+function deleteArticle(id, title, category) {
     if (confirm(`Are you sure you want to delete "${title}"?`)) {
-        const techNews = contentStorage.get('tech-news') || [];
-        const crimeNews = contentStorage.get('crime-news') || [];
-        
-        const updatedTechNews = techNews.filter(article => article.id !== id);
-        const updatedCrimeNews = crimeNews.filter(article => article.id !== id);
-        
-        if (techNews.length !== updatedTechNews.length) {
-            contentStorage.save('tech-news', updatedTechNews);
-            loadArticles(document.querySelector('#tech-news .articles-list'), updatedTechNews);
-        } else {
-            contentStorage.save('crime-news', updatedCrimeNews);
-            loadArticles(document.querySelector('#crime-news .articles-list'), updatedCrimeNews);
-        }
-        
+        ['tech-news', 'crime-news'].forEach(section => {
+            const articles = contentStorage.get(section) || [];
+            const updated = articles.filter(article => article.id !== id);
+            if (updated.length !== articles.length) {
+                contentStorage.save(section, updated);
+                const container = document.querySelector(`#${section} .articles-list`);
+                if (container) {
+                    loadArticles(container, updated);
+                }
+            }
+        });
         updateDashboardStatus();
         showNotification('Article deleted successfully!');
     }
@@ -444,13 +441,11 @@ function deleteArticle(id, title) {
 function initializeSettings() {
     const settingsSection = document.getElementById('settings');
     if (settingsSection) {
-        // Clear existing content
         settingsSection.innerHTML = '<h2>Website Settings</h2>';
         
         const settingsForm = createSettingsForm();
         settingsSection.appendChild(settingsForm);
         
-        // Load saved settings
         loadSettings();
     }
 }
@@ -507,7 +502,6 @@ function createSettingsForm() {
         <button type="submit" class="save-btn">Save Settings</button>
     `;
 
-    // Handle form submission
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -533,8 +527,6 @@ function createSettingsForm() {
         
         updateDashboardStatus();
         showNotification('Settings saved successfully!');
-        
-        return false;
     });
 
     return form;
@@ -551,6 +543,7 @@ function loadSettings() {
         if (settings.address) form.address.value = settings.address;
         if (settings.phone) form.phone.value = settings.phone;
         if (settings.email) form.email.value = settings.email;
+        
         if (settings.socialMedia) {
             if (settings.socialMedia.facebook) form.facebook.value = settings.socialMedia.facebook;
             if (settings.socialMedia.twitter) form.twitter.value = settings.socialMedia.twitter;
