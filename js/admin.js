@@ -92,32 +92,35 @@ function updateAdminUser() {
     }
 }
 
-// Time display formatter and updater
-function updateTimeAndUser() {
-    const timeStr = new Date().toISOString()
-        .replace('T', ' ')
-        .slice(0, 19);
-
-    return `
-        <div class="time-display">
-            <div class="current-time">Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): ${timeStr}</div>
-            <div class="current-user">Current User's Login: rkritzar54</div>
-        </div>
-    `;
+// Time display function with exact format
+function getFormattedDateTime() {
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(now.getUTCDate()).padStart(2, '0');
+    const hours = String(now.getUTCHours()).padStart(2, '0');
+    const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
 function initializeTimeDisplay() {
-    const headerContent = document.querySelector('.admin-header-content');
-    if (headerContent) {
-        const timeDisplay = document.createElement('div');
-        timeDisplay.innerHTML = updateTimeAndUser();
-        headerContent.appendChild(timeDisplay);
-
-        // Update time every second
-        setInterval(() => {
-            timeDisplay.innerHTML = updateTimeAndUser();
-        }, 1000);
+    const timeDisplay = document.createElement('div');
+    timeDisplay.className = 'time-display';
+    
+    function updateDisplay() {
+        timeDisplay.innerHTML = `
+            <div class="current-time">Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): ${getFormattedDateTime()}</div>
+            <div class="current-user">Current User's Login: rkritzar54</div>
+        `;
     }
+    
+    updateDisplay();
+    document.querySelector('.admin-header-content').appendChild(timeDisplay);
+    
+    // Update time every second
+    setInterval(updateDisplay, 1000);
 }
 
 // Tab switching functionality
@@ -152,14 +155,20 @@ function initializeTabs() {
 function initializeContentEditors() {
     const aboutSection = document.getElementById('about');
     if (aboutSection) {
-        // Create About page editor
         const aboutEditor = createEditor('about-content', 'About Page Content');
         aboutSection.appendChild(aboutEditor);
         
         // Load existing content
         const savedAboutContent = contentStorage.get('about-content');
         if (savedAboutContent) {
-            aboutEditor.querySelector('textarea').value = savedAboutContent;
+            const textarea = aboutEditor.querySelector('textarea');
+            textarea.value = savedAboutContent;
+            
+            // Update preview if it exists
+            const preview = aboutEditor.querySelector('.editor-preview');
+            if (preview) {
+                preview.innerHTML = savedAboutContent;
+            }
         }
     }
 }
@@ -176,13 +185,15 @@ function createEditor(id, title) {
             <button type="button" data-command="underline"><u>U</u></button>
         </div>
         <textarea id="${id}" class="content-editor"></textarea>
+        <div class="editor-preview"></div>
         <button type="button" class="save-btn">Save Content</button>
     `;
 
-    // Add event listeners for toolbar buttons
-    const buttons = container.querySelectorAll('.editor-toolbar button');
     const textarea = container.querySelector('textarea');
+    const preview = container.querySelector('.editor-preview');
+    const buttons = container.querySelectorAll('.editor-toolbar button');
     
+    // Add toolbar button functionality
     buttons.forEach(button => {
         button.addEventListener('click', () => {
             const command = button.getAttribute('data-command');
@@ -208,7 +219,15 @@ function createEditor(id, title) {
                 textarea.value.substring(0, textarea.selectionStart) +
                 replacement +
                 textarea.value.substring(textarea.selectionEnd);
+            
+            // Update preview
+            preview.innerHTML = textarea.value;
         });
+    });
+
+    // Add live preview
+    textarea.addEventListener('input', () => {
+        preview.innerHTML = textarea.value;
     });
 
     // Add save functionality
@@ -331,6 +350,9 @@ function initializeNewsSection(id, title) {
     const section = document.getElementById(id);
     if (!section) return;
 
+    // Clear existing content
+    section.innerHTML = '';
+
     const container = document.createElement('div');
     container.className = 'news-manager';
     
@@ -391,19 +413,19 @@ function loadArticles(container, articles) {
                     <small>${new Date(article.date).toLocaleDateString()}</small>
                     <p>${article.content.substring(0, 100)}...</p>
                 </div>
-                <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">Delete</button>
+                <button class="btn btn-danger" onclick="deleteArticle(${article.id}, '${article.title}')">Delete</button>
             </div>
         `).join('')}
     `;
 }
 
-function deleteArticle(id) {
-    if (confirm('Are you sure you want to delete this article?')) {
+function deleteArticle(id, title) {
+    if (confirm(`Are you sure you want to delete "${title}"?`)) {
         const techNews = contentStorage.get('tech-news') || [];
         const crimeNews = contentStorage.get('crime-news') || [];
         
-        const updatedTechNews = techNews.filter(article => article.id !== Number(id));
-        const updatedCrimeNews = crimeNews.filter(article => article.id !== Number(id));
+        const updatedTechNews = techNews.filter(article => article.id !== id);
+        const updatedCrimeNews = crimeNews.filter(article => article.id !== id);
         
         if (techNews.length !== updatedTechNews.length) {
             contentStorage.save('tech-news', updatedTechNews);
@@ -422,6 +444,9 @@ function deleteArticle(id) {
 function initializeSettings() {
     const settingsSection = document.getElementById('settings');
     if (settingsSection) {
+        // Clear existing content
+        settingsSection.innerHTML = '<h2>Website Settings</h2>';
+        
         const settingsForm = createSettingsForm();
         settingsSection.appendChild(settingsForm);
         
@@ -432,6 +457,7 @@ function initializeSettings() {
 
 function createSettingsForm() {
     const form = document.createElement('form');
+    form.id = 'settings-form';
     form.className = 'settings-container';
     form.innerHTML = `
         <div class="settings-group">
@@ -442,7 +468,7 @@ function createSettingsForm() {
             </div>
             <div class="setting-item">
                 <label>Theme Color</label>
-                <input type="color" name="theme-color">
+                <input type="color" name="theme-color" value="#2c3e50">
             </div>
         </div>
 
@@ -481,30 +507,34 @@ function createSettingsForm() {
         <button type="submit" class="save-btn">Save Settings</button>
     `;
 
-    form.addEventListener('submit', (e) => {
+    // Handle form submission
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
+        
         const settings = {
-            siteTitle: e.target['site-title'].value,
-            themeColor: e.target['theme-color'].value,
-            address: e.target.address.value,
-            phone: e.target.phone.value,
-            email: e.target.email.value,
+            siteTitle: this['site-title'].value,
+            themeColor: this['theme-color'].value,
+            address: this.address.value,
+            phone: this.phone.value,
+            email: this.email.value,
             socialMedia: {
-                facebook: e.target.facebook.value,
-                twitter: e.target.twitter.value,
-                linkedin: e.target.linkedin.value
+                facebook: this.facebook.value,
+                twitter: this.twitter.value,
+                linkedin: this.linkedin.value
             }
         };
         
         contentStorage.save('site-settings', settings);
         contentStorage.save('settings-last-updated', new Date().toISOString());
-        updateDashboardStatus();
-        showNotification('Settings saved successfully!');
         
-        // Update theme color if changed
         if (settings.themeColor) {
             document.documentElement.style.setProperty('--primary-color', settings.themeColor);
         }
+        
+        updateDashboardStatus();
+        showNotification('Settings saved successfully!');
+        
+        return false;
     });
 
     return form;
@@ -513,17 +543,23 @@ function createSettingsForm() {
 function loadSettings() {
     const settings = contentStorage.get('site-settings');
     if (settings) {
-        const form = document.querySelector('.settings-container');
+        const form = document.getElementById('settings-form');
         if (!form) return;
 
-        form.querySelector('[name="site-title"]').value = settings.siteTitle || '';
-        form.querySelector('[name="theme-color"]').value = settings.themeColor || '#2c3e50';
-        form.querySelector('[name="address"]').value = settings.address || '';
-        form.querySelector('[name="phone"]').value = settings.phone || '';
-        form.querySelector('[name="email"]').value = settings.email || '';
-        form.querySelector('[name="facebook"]').value = settings.socialMedia?.facebook || '';
-        form.querySelector('[name="twitter"]').value = settings.socialMedia?.twitter || '';
-        form.querySelector('[name="linkedin"]').value = settings.socialMedia?.linkedin || '';
+        if (settings.siteTitle) form['site-title'].value = settings.siteTitle;
+        if (settings.themeColor) form['theme-color'].value = settings.themeColor;
+        if (settings.address) form.address.value = settings.address;
+        if (settings.phone) form.phone.value = settings.phone;
+        if (settings.email) form.email.value = settings.email;
+        if (settings.socialMedia) {
+            if (settings.socialMedia.facebook) form.facebook.value = settings.socialMedia.facebook;
+            if (settings.socialMedia.twitter) form.twitter.value = settings.socialMedia.twitter;
+            if (settings.socialMedia.linkedin) form.linkedin.value = settings.socialMedia.linkedin;
+        }
+        
+        if (settings.themeColor) {
+            document.documentElement.style.setProperty('--primary-color', settings.themeColor);
+        }
     }
 }
 
