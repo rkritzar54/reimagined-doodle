@@ -1,5 +1,5 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-26 03:46:48';
+const CURRENT_TIMESTAMP = '2025-03-26 00:47:28';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -49,7 +49,7 @@ function initializeTabs() {
         console.log('Tab link found:', tabId);
         
         link.addEventListener('click', (e) => {
-            e.preventDefault();
+            e.preventDefault(); // Prevent default behavior
             console.log('Clicked tab:', tabId);
             
             // Update active states
@@ -119,6 +119,7 @@ function initializeBusinessHours() {
     });
 }
 
+// Update these two functions to use the new conversion functions
 function loadBusinessHours() {
     const hours = JSON.parse(localStorage.getItem('businessHours')) || getDefaultBusinessHours();
     
@@ -129,8 +130,9 @@ function loadBusinessHours() {
         
         if (openCheckbox && startInput && endInput) {
             openCheckbox.checked = !schedule.closed;
-            startInput.value = schedule.open;
-            endInput.value = schedule.close;
+            // Show times in 12-hour format for display
+            startInput.value = schedule.open;  // Keep 24-hour format for input[type="time"]
+            endInput.value = schedule.close;   // Keep 24-hour format for input[type="time"]
             startInput.disabled = schedule.closed;
             endInput.disabled = schedule.closed;
         }
@@ -148,6 +150,7 @@ function saveBusinessHours(e) {
         const openCheckbox = this.querySelector(`[name="${day}-open"]`);
         
         hours[day] = {
+            // Time inputs are already in 24-hour format
             open: startInput.value,
             close: endInput.value,
             closed: !openCheckbox.checked
@@ -160,37 +163,28 @@ function saveBusinessHours(e) {
 }
 
 // Time conversion functions
-function convertEDTToLocal(edtTimeStr) {
-    if (!edtTimeStr) return '';
+function formatDisplayTime(time24) {
+    // Converts 24-hour time (13:00) to 12-hour time (1:00 PM)
+    if (!time24) return '';
     
-    // Parse the 24-hour time
-    const [hours, minutes] = edtTimeStr.split(':').map(Number);
-    
-    // Convert to 12-hour format with AM/PM
+    const [hours, minutes] = time24.split(':').map(Number);
     const period = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours % 12 || 12;
     
     return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
 }
 
-function convertLocalToEDT(localTimeStr) {
-    if (!localTimeStr) return '';
+function convertTo24Hour(time12) {
+    // Converts 12-hour time (1:00 PM) to 24-hour time (13:00)
+    if (!time12) return '';
     
-    // Create a date object at midnight UTC
-    const date = new Date();
-    date.setUTCHours(0, 0, 0, 0);
+    const [time, period] = time12.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
     
-    // Parse local time
-    const [hours, minutes] = localTimeStr.split(':').map(Number);
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
     
-    // Set local time
-    date.setHours(hours, minutes);
-    
-    // Convert to EDT (UTC-4)
-    const edtHours = (24 + date.getUTCHours() - 4) % 24;
-    
-    // Format in 24-hour time
-    return `${edtHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
 // Settings Management
@@ -407,6 +401,59 @@ function addHolidayItem(holiday = {}, index) {
     });
 
     item.querySelector('.remove-holiday').addEventListener('click', () => item.remove());
+}
+
+// Convert EDT time to user's local time
+function convertEDTToLocal(edtTimeStr) {
+    if (!edtTimeStr) return '';
+    
+    // Parse the 24-hour time
+    const [hours, minutes] = edtTimeStr.split(':').map(Number);
+    
+    // Convert to 12-hour format with AM/PM
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
+function convertLocalToEDT(localTimeStr) {
+    if (!localTimeStr) return '';
+    
+    // Split time and period (e.g., "10:00 AM" -> ["10:00", "AM"])
+    const [time, period] = localTimeStr.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    
+    // Convert to 24-hour format
+    if (period === 'PM' && hours !== 12) {
+        hours += 12;
+    } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+    }
+    
+    // Return in 24-hour format
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+}
+
+// Convert local time to EDT
+function convertLocalToEDT(localTimeStr) {
+    if (!localTimeStr) return '';
+    
+    // Create a date object at midnight UTC
+    const date = new Date();
+    date.setUTCHours(0, 0, 0, 0);
+    
+    // Parse local time
+    const [hours, minutes] = localTimeStr.split(':').map(Number);
+    
+    // Set local time
+    date.setHours(hours, minutes);
+    
+    // Convert to EDT (UTC-4)
+    const edtHours = (24 + date.getUTCHours() - 4) % 24;
+    
+    // Format in 24-hour time
+    return `${edtHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
 // Booking Management
