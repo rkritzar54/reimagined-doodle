@@ -71,6 +71,34 @@ body {
     font-weight: 500;
 }
 
+/* Time Display */
+.time-display {
+    position: fixed;
+    top: 0;
+    right: 0;
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 15px 20px;
+    z-index: 1001;
+    font-family: 'Courier New', monospace;
+    line-height: 1.4;
+    text-align: right;
+    white-space: nowrap;
+    box-shadow: var(--shadow);
+    min-width: 450px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.time-display .current-time {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.time-display .current-user {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
 /* Main Layout */
 .admin-container {
     display: flex;
@@ -444,6 +472,22 @@ textarea:focus {
 
     .time-input {
         width: 100%;
+    }
+    
+    .time-display {
+        min-width: unset;
+        width: 100%;
+        font-size: 12px;
+        padding: 10px 15px;
+    }
+    
+    .time-display .current-time,
+    .time-display .current-user {
+        font-size: 12px;
+    }
+
+    .admin-header-content {
+        padding-right: 1rem;
     }
 }
 
