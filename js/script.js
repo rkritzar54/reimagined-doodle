@@ -37,10 +37,11 @@ document.addEventListener('DOMContentLoaded', function () {
             event.preventDefault(); // Prevent default link behavior
             const menu = this.querySelector('.dropdown-menu');
             if (menu) {
-                const isOpen = menu.style.display === 'block';
-                menu.style.display = isOpen ? 'none' : 'block'; // Toggle menu
+                const isVisible = menu.style.display === 'block';
+                menu.style.display = isVisible ? 'none' : 'block'; // Toggle visibility
             }
         });
     });
 });
+
 
