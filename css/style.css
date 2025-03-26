@@ -135,11 +135,11 @@ body {
 }
 
 .left-column {
-    flex: 5;
+    flex: 4; /* Adjusted to be narrower */
 }
 
 .right-column {
-    flex: 7;
+    flex: 8; /* Adjusted to be wider */
 }
 
 .news-updates, .our-mission, .quick-links, .upcoming-events {
