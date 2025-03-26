@@ -1,0 +1,174 @@
+/* Basic Reset */
+body, h1, h2, h3, h4, h5, h6, p, ul, li, a {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+    text-decoration: none;
+    list-style: none;
+    color: inherit;
+}
+
+body {
+    font-family: sans-serif;
+    line-height: 1.6;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header Styling */
+.main-header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-name {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.main-nav ul {
+    display: flex;
+}
+
+.main-nav ul li {
+    margin-left: 20px;
+    position: relative;
+}
+
+.main-nav ul li a {
+    color: #fff;
+    display: block;
+    padding: 10px 15px;
+}
+
+.main-nav ul li a.active {
+    font-weight: bold;
+}
+
+/* Dropdown Styling */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #333;
+    border-top: 1px solid #555;
+    display: none;
+    z-index: 10;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu li {
+    margin: 0;
+}
+
+.dropdown-menu li a {
+    padding: 10px 15px;
+    display: block;
+    width: 150px; /* Adjust width as needed */
+}
+
+.dropdown-menu li a:hover {
+    background-color: #555;
+}
+
+.active-dropdown > a {
+    font-weight: bold;
+}
+
+/* Hero Section */
+.hero-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin-bottom: 20px;
+}
+
+/* Content Columns */
+.content-columns {
+    display: flex;
+    gap: 20px;
+}
+
+.left-column {
+    flex: 2;
+}
+
+.right-column {
+    flex: 1;
+}
+
+/* Pill Button */
+.pill-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 20px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.pill-button:hover {
+    background-color: #0056b3;
+}
+
+.rivers-links .link-buttons {
+    margin-top: 10px;
+}
+
+/* Footer Styling */
+.main-footer {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    margin-top: 30px;
+}
+
+.footer-columns {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.footer-left, .footer-right {
+    flex: 1;
+}
+
+.footer-right h3 {
+    margin-top: 0;
+}
+
+.social-links a {
+    color: #fff;
+    margin-right: 10px;
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 10px;
+    border-top: 1px solid #555;
+}
