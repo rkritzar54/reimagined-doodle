@@ -407,25 +407,32 @@ function addHolidayItem(holiday = {}, index) {
 function convertEDTToLocal(edtTimeStr) {
     if (!edtTimeStr) return '';
     
-    // Create a date object at midnight UTC
-    const date = new Date();
-    date.setUTCHours(0, 0, 0, 0);
-    
-    // Parse EDT time
+    // Parse the 24-hour time
     const [hours, minutes] = edtTimeStr.split(':').map(Number);
     
-    // Convert EDT to UTC (EDT is UTC-4)
-    const utcHours = (hours + 4) % 24;
+    // Convert to 12-hour format with AM/PM
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
     
-    // Set UTC time
-    date.setUTCHours(utcHours, minutes);
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
+function convertLocalToEDT(localTimeStr) {
+    if (!localTimeStr) return '';
     
-    // Get local time components
-    const localHours = date.getHours();
-    const localMinutes = date.getMinutes();
+    // Split time and period (e.g., "10:00 AM" -> ["10:00", "AM"])
+    const [time, period] = localTimeStr.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
     
-    // Format in 24-hour time
-    return `${localHours.toString().padStart(2, '0')}:${localMinutes.toString().padStart(2, '0')}`;
+    // Convert to 24-hour format
+    if (period === 'PM' && hours !== 12) {
+        hours += 12;
+    } else if (period === 'AM' && hours === 12) {
+        hours = 0;
+    }
+    
+    // Return in 24-hour format
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
 // Convert local time to EDT
