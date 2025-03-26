@@ -1,4 +1,29 @@
-// Modal functionality for articles
+// Constants
+const CURRENT_TIMESTAMP = '2025-03-26 02:50:15';
+const CURRENT_USER = 'rkritzar54';
+
+// Wait for DOM to be loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Navigation functionality
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.querySelector('.mobile-menu');
+
+    if (hamburger && mobileMenu) {
+        hamburger.addEventListener('click', function() {
+            this.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking a link
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            });
+        });
+    }
+
+    // Modal functionality for articles
     const modal = document.getElementById('articleModal');
     if (modal) {
         const modalContent = modal.querySelector('.modal-content');
@@ -342,136 +367,81 @@
         return 'Check back later';
     }
 
-    function initializeBookingSystem() {
-        const bookingButton = document.getElementById('bookingButton');
-        const bookingModal = document.getElementById('bookingModal');
-        
-        if (!bookingButton || !bookingModal) return;
-
-        const closeModal = bookingModal.querySelector('.modal-close');
-
-        bookingButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            bookingModal.style.display = 'block';
-            document.body.classList.add('modal-open');
-            populateTimeSlots();
-        });
-
-        if (closeModal) {
-            closeModal.addEventListener('click', function() {
-                bookingModal.style.display = 'none';
-                document.body.classList.remove('modal-open');
-            });
-        }
-
-        window.addEventListener('click', function(e) {
-            if (e.target === bookingModal) {
-                bookingModal.style.display = 'none';
-                document.body.classList.remove('modal-open');
-            }
-        });
-
-        // Booking form submission
-        const bookingForm = document.getElementById('bookingForm');
-        if (bookingForm) {
-            bookingForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                alert('Booking submitted successfully!');
-                bookingModal.style.display = 'none';
-                document.body.classList.remove('modal-open');
-            });
-        }
+    // Initialize business hours update
+    if (typeof businessHours !== 'undefined') {
+        updateBusinessStatus();
+        setInterval(updateBusinessStatus, 60000); // Update every minute
     }
 
-    function populateTimeSlots() {
-        const timeSelect = document.getElementById('time');
-        const dateInput = document.getElementById('date');
-        
-        if (!timeSelect || !dateInput) return;
-
-        dateInput.addEventListener('change', function() {
-            const selectedDate = new Date(this.value);
-            const day = selectedDate.toLocaleDateString('en-US', { weekday: 'lowercase' });
-            const hours = businessHours[day];
-            
-            timeSelect.innerHTML = '<option value="">Select a time</option>';
-            
-            if (!hours.closed) {
-                const start = parseInt(hours.open.split(':')[0]);
-                const end = parseInt(hours.close.split(':')[0]);
-                
-                for (let hour = start; hour < end; hour++) {
-                    for (let minute of ['00', '30']) {
-                        const time = `${hour.toString().padStart(2, '0')}:${minute}`;
-                        timeSelect.innerHTML += `<option value="${time}">${time}</option>`;
-                    }
-                }
-            }
-        });
-    }
+    // Initialize booking system if present
+    initializeBookingSystem();
 });
 
+// Booking system initialization
+function initializeBookingSystem() {
+    const bookingButton = document.getElementById('bookingButton');
+    const bookingModal = document.getElementById('bookingModal');
+    
+    if (!bookingButton || !bookingModal) return;
 
-// Wait for DOM to be loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Navigation functionality
-    const hamburger = document.getElementById('hamburger');
-    const mobileMenu = document.querySelector('.mobile-menu');
-    const dropdowns = document.querySelectorAll('.dropdown');
+    const closeModal = bookingModal.querySelector('.modal-close');
 
-    // Hamburger menu toggle
-    if (hamburger && mobileMenu) {
-        hamburger.addEventListener('click', function() {
-            hamburger.classList.toggle('active');
-            mobileMenu.classList.toggle('active');
-        });
+    bookingButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        bookingModal.style.display = 'block';
+        document.body.classList.add('modal-open');
+        populateTimeSlots();
+    });
 
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
-                hamburger.classList.remove('active');
-                mobileMenu.classList.remove('active');
-            }
-        });
-
-        // Close mobile menu when clicking a link
-        mobileMenu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                mobileMenu.classList.remove('active');
-            });
+    if (closeModal) {
+        closeModal.addEventListener('click', function() {
+            bookingModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
         });
     }
 
-    // Desktop dropdown functionality
-    dropdowns.forEach(dropdown => {
-        const dropdownMenu = dropdown.querySelector('.dropdown-menu');
-        
-        // Show dropdown on hover for desktop
-        if (window.innerWidth > 768) {
-            dropdown.addEventListener('mouseenter', () => {
-                dropdownMenu.style.display = 'block';
-            });
-            
-            dropdown.addEventListener('mouseleave', () => {
-                dropdownMenu.style.display = 'none';
-            });
+    window.addEventListener('click', function(e) {
+        if (e.target === bookingModal) {
+            bookingModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
         }
-        
-        // Handle dropdown toggle on click for mobile
-        dropdown.querySelector('a').addEventListener('click', function(e) {
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-                dropdownMenu.style.display = 
-                    dropdownMenu.style.display === 'block' ? 'none' : 'block';
-            }
-        });
     });
 
-    // Update active state in navigation
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    document.querySelectorAll('nav a').forEach(link => {
-        if (link.getAttribute('href') === currentPage) {
-            link.classList.add('active');
+    // Booking form submission
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Booking submitted successfully!');
+            bookingModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        });
+    }
+}
+
+function populateTimeSlots() {
+    const timeSelect = document.getElementById('time');
+    const dateInput = document.getElementById('date');
+    
+    if (!timeSelect || !dateInput) return;
+
+    dateInput.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        const day = selectedDate.toLocaleDateString('en-US', { weekday: 'lowercase' });
+        const hours = businessHours[day];
+        
+        timeSelect.innerHTML = '<option value="">Select a time</option>';
+        
+        if (!hours.closed) {
+            const start = parseInt(hours.open.split(':')[0]);
+            const end = parseInt(hours.close.split(':')[0]);
+            
+            for (let hour = start; hour < end; hour++) {
+                for (let minute of ['00', '30']) {
+                    const time = `${hour.toString().padStart(2, '0')}:${minute}`;
+                    timeSelect.innerHTML += `<option value="${time}">${time}</option>`;
+                }
+            }
         }
     });
+}
