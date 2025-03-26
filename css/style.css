@@ -234,6 +234,50 @@ h3 {
     background: #333;
 }
 
+/* Dropdown Menu Styling */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Place below the parent item */
+    left: 0;
+    background-color: #003366; /* Dark blue dropdown background */
+    padding: 10px 0;
+    list-style: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+/* Ensure dropdown is displayed properly on hover */
+.dropdown:hover .dropdown-menu {
+    display: block; /* Show dropdown when parent is hovered */
+}
+
+.dropdown-menu li {
+    margin: 0;
+    text-align: left;
+}
+
+.dropdown-menu li a {
+    padding: 10px 20px;
+    display: block;
+    color: white;
+    transition: background 0.3s ease;
+}
+
+.dropdown-menu li a:hover {
+    background-color: #004d99; /* Slightly lighter blue */
+}
+
+/* Prevent dropdown menus from flickering */
+.dropdown-menu {
+    pointer-events: auto; /* Prevent flickering when hovered */
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .content-columns {
