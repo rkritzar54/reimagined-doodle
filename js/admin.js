@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize settings
     initializeSettings();
+
+    // Initialize current time display
+    initializeTimeDisplay();
 });
 
 // Update admin user information
@@ -47,6 +50,14 @@ function initializeTabs() {
     tabItems.forEach(tab => {
         tab.addEventListener('click', () => {
             const tabId = tab.getAttribute('data-tab');
+            
+            // Handle logout specially
+            if (tabId === 'logout') {
+                if (confirm('Are you sure you want to logout?')) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            }
             
             // Remove active class from all tabs and contents
             tabItems.forEach(item => item.classList.remove('active'));
@@ -75,6 +86,63 @@ function initializeContentEditors() {
     }
 }
 
+// Create editor helper function
+function createEditor(id, title) {
+    const container = document.createElement('div');
+    container.className = 'editor-container';
+    container.innerHTML = `
+        <h3>${title}</h3>
+        <div class="editor-toolbar">
+            <button type="button" data-command="bold"><strong>B</strong></button>
+            <button type="button" data-command="italic"><em>I</em></button>
+            <button type="button" data-command="underline"><u>U</u></button>
+        </div>
+        <textarea id="${id}" class="content-editor"></textarea>
+        <button type="button" class="save-btn">Save Content</button>
+    `;
+
+    // Add event listeners for toolbar buttons
+    const buttons = container.querySelectorAll('.editor-toolbar button');
+    const textarea = container.querySelector('textarea');
+    
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            const command = button.getAttribute('data-command');
+            const selection = textarea.value.substring(
+                textarea.selectionStart,
+                textarea.selectionEnd
+            );
+            
+            let replacement = '';
+            switch(command) {
+                case 'bold':
+                    replacement = `**${selection}**`;
+                    break;
+                case 'italic':
+                    replacement = `*${selection}*`;
+                    break;
+                case 'underline':
+                    replacement = `_${selection}_`;
+                    break;
+            }
+            
+            textarea.value = 
+                textarea.value.substring(0, textarea.selectionStart) +
+                replacement +
+                textarea.value.substring(textarea.selectionEnd);
+        });
+    });
+
+    // Add save functionality
+    const saveBtn = container.querySelector('.save-btn');
+    saveBtn.addEventListener('click', () => {
+        contentStorage.save(id, textarea.value);
+        showNotification('Content saved successfully!');
+    });
+
+    return container;
+}
+
 // Initialize business hours editor
 function initializeBusinessHours() {
     const businessHoursSection = document.getElementById('business-hours');
@@ -93,6 +161,7 @@ function initializeBusinessHours() {
         const saveButton = document.createElement('button');
         saveButton.type = 'button';
         saveButton.textContent = 'Save Business Hours';
+        saveButton.className = 'save-btn';
         saveButton.onclick = saveBusinessHours;
         
         hoursForm.appendChild(saveButton);
@@ -103,10 +172,166 @@ function initializeBusinessHours() {
     }
 }
 
+function createBusinessHourInput(day) {
+    const dayDiv = document.createElement('div');
+    dayDiv.className = 'business-hour-item';
+
+    // Load saved hours for this day
+    const savedHours = contentStorage.get('business-hours') || {};
+    const dayHours = savedHours[day] || { open: '09:00', close: '17:00', closed: false };
+
+    dayDiv.innerHTML = `
+        <label>${day}</label>
+        <input type="time" name="${day}-open" class="time-input" value="${dayHours.open}" ${dayHours.closed ? 'disabled' : ''}>
+        <span>to</span>
+        <input type="time" name="${day}-close" class="time-input" value="${dayHours.close}" ${dayHours.closed ? 'disabled' : ''}>
+        <label class="closed-checkbox">
+            <input type="checkbox" name="${day}-closed" ${dayHours.closed ? 'checked' : ''}>
+            Closed
+        </label>
+    `;
+
+    // Add event listener for closed checkbox
+    const checkbox = dayDiv.querySelector(`[name="${day}-closed"]`);
+    const timeInputs = dayDiv.querySelectorAll('.time-input');
+    
+    checkbox.addEventListener('change', () => {
+        timeInputs.forEach(input => input.disabled = checkbox.checked);
+    });
+
+    return dayDiv;
+}
+
+function loadBusinessHours() {
+    const savedHours = contentStorage.get('business-hours');
+    if (savedHours) {
+        Object.entries(savedHours).forEach(([day, hours]) => {
+            const openInput = document.querySelector(`[name="${day}-open"]`);
+            const closeInput = document.querySelector(`[name="${day}-close"]`);
+            const closedCheckbox = document.querySelector(`[name="${day}-closed"]`);
+            
+            if (openInput && closeInput && closedCheckbox) {
+                openInput.value = hours.open;
+                closeInput.value = hours.close;
+                closedCheckbox.checked = hours.closed;
+                openInput.disabled = hours.closed;
+                closeInput.disabled = hours.closed;
+            }
+        });
+    }
+}
+
+function saveBusinessHours() {
+    const form = document.getElementById('business-hours-form');
+    const hours = {};
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    
+    days.forEach(day => {
+        const closed = form.querySelector(`[name="${day}-closed"]`).checked;
+        hours[day] = {
+            open: form.querySelector(`[name="${day}-open"]`).value,
+            close: form.querySelector(`[name="${day}-close"]`).value,
+            closed: closed
+        };
+    });
+    
+    contentStorage.save('business-hours', hours);
+    showNotification('Business hours saved successfully!');
+}
+
 // Initialize news editors
 function initializeNewsEditors() {
     initializeNewsSection('tech-news', 'Tech News Articles');
     initializeNewsSection('crime-news', 'Crime News Articles');
+}
+
+function initializeNewsSection(id, title) {
+    const section = document.getElementById(id);
+    if (!section) return;
+
+    const container = document.createElement('div');
+    container.className = 'news-manager';
+    
+    // Create form for new articles
+    const newsForm = document.createElement('form');
+    newsForm.className = 'news-form';
+    newsForm.innerHTML = `
+        <h3>Add New Article</h3>
+        <input type="text" name="title" placeholder="Article Title" required>
+        <input type="text" name="category" placeholder="Category">
+        <textarea name="content" placeholder="Article Content" required></textarea>
+        <button type="submit" class="save-btn">Add Article</button>
+    `;
+
+    // Create list for existing articles
+    const newsList = document.createElement('div');
+    newsList.className = 'articles-list';
+    newsList.innerHTML = `<h3>Published Articles</h3>`;
+
+    container.appendChild(newsForm);
+    container.appendChild(newsList);
+    section.appendChild(container);
+
+    // Handle form submission
+    newsForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const article = {
+            id: Date.now(),
+            title: e.target.title.value,
+            category: e.target.category.value,
+            content: e.target.content.value,
+            date: new Date().toISOString()
+        };
+
+        const articles = contentStorage.get(id) || [];
+        articles.unshift(article);
+        contentStorage.save(id, articles);
+        
+        e.target.reset();
+        loadArticles(newsList, articles);
+        showNotification('Article added successfully!');
+    });
+
+    // Load existing articles
+    const articles = contentStorage.get(id) || [];
+    loadArticles(newsList, articles);
+}
+
+function loadArticles(container, articles) {
+    const articlesList = container.querySelector('.articles-list') || container;
+    articlesList.innerHTML = `
+        <h3>Published Articles</h3>
+        ${articles.map(article => `
+            <div class="news-item">
+                <div class="news-item-content">
+                    <h4>${article.title}</h4>
+                    <small>${new Date(article.date).toLocaleDateString()}</small>
+                    <p>${article.content.substring(0, 100)}...</p>
+                </div>
+                <button class="btn btn-danger" onclick="deleteArticle('${article.id}')">Delete</button>
+            </div>
+        `).join('')}
+    `;
+}
+
+function deleteArticle(id) {
+    if (confirm('Are you sure you want to delete this article?')) {
+        const techNews = contentStorage.get('tech-news') || [];
+        const crimeNews = contentStorage.get('crime-news') || [];
+        
+        const updatedTechNews = techNews.filter(article => article.id !== Number(id));
+        const updatedCrimeNews = crimeNews.filter(article => article.id !== Number(id));
+        
+        if (techNews.length !== updatedTechNews.length) {
+            contentStorage.save('tech-news', updatedTechNews);
+            loadArticles(document.querySelector('#tech-news .articles-list'), updatedTechNews);
+        } else {
+            contentStorage.save('crime-news', updatedCrimeNews);
+            loadArticles(document.querySelector('#crime-news .articles-list'), updatedCrimeNews);
+        }
+        
+        showNotification('Article deleted successfully!');
+    }
 }
 
 // Initialize settings
@@ -121,222 +346,131 @@ function initializeSettings() {
     }
 }
 
-// Helper function to create an editor
-function createEditor(id, title) {
-    const container = document.createElement('div');
-    container.className = 'editor-container';
-    
-    const textarea = document.createElement('textarea');
-    textarea.id = id;
-    textarea.rows = 10;
-    
-    const saveBtn = document.createElement('button');
-    saveBtn.textContent = 'Save Changes';
-    saveBtn.onclick = () => saveContent(id);
-    
-    container.appendChild(textarea);
-    container.appendChild(saveBtn);
-    
-    return container;
-}
-
-// Helper function to create business hour input
-function createBusinessHourInput(day) {
-    const dayDiv = document.createElement('div');
-    dayDiv.className = 'business-hour-item';
-    
-    dayDiv.innerHTML = `
-        <label>${day}</label>
-        <input type="time" name="${day}-open" class="time-input">
-        <span>to</span>
-        <input type="time" name="${day}-close" class="time-input">
-        <input type="checkbox" name="${day}-closed" class="closed-checkbox">
-        <label class="closed-label">Closed</label>
-    `;
-    
-    return dayDiv;
-}
-
-// Save content changes
-function saveContent(id) {
-    const content = document.getElementById(id).value;
-    contentStorage.save(id, content);
-    alert('Content saved successfully!');
-}
-
-// Save business hours
-function saveBusinessHours() {
-    const form = document.getElementById('business-hours-form');
-    const hours = {};
-    
-    const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    
-    daysOfWeek.forEach(day => {
-        hours[day] = {
-            open: form.querySelector(`[name="${day}-open"]`).value,
-            close: form.querySelector(`[name="${day}-close"]`).value,
-            closed: form.querySelector(`[name="${day}-closed"]`).checked
-        };
-    });
-    
-    contentStorage.save('business-hours', hours);
-    alert('Business hours saved successfully!');
-}
-
-// Load business hours
-function loadBusinessHours() {
-    const savedHours = contentStorage.get('business-hours');
-    if (savedHours) {
-        Object.entries(savedHours).forEach(([day, hours]) => {
-            const openInput = document.querySelector(`[name="${day}-open"]`);
-            const closeInput = document.querySelector(`[name="${day}-close"]`);
-            const closedInput = document.querySelector(`[name="${day}-closed"]`);
-            
-            if (openInput && closeInput && closedInput) {
-                openInput.value = hours.open;
-                closeInput.value = hours.close;
-                closedInput.checked = hours.closed;
-            }
-        });
-    }
-}
-
-// Initialize news section
-function initializeNewsSection(sectionId, title) {
-    const section = document.getElementById(sectionId);
-    if (section) {
-        const newsEditor = createNewsEditor(sectionId);
-        section.appendChild(newsEditor);
-        
-        // Load existing news
-        loadNews(sectionId);
-    }
-}
-
-// Create news editor
-function createNewsEditor(sectionId) {
-    const container = document.createElement('div');
-    container.className = 'news-editor';
-    
-    const form = document.createElement('form');
-    form.innerHTML = `
-        <div class="news-item-editor">
-            <input type="text" name="title" placeholder="Article Title" required>
-            <textarea name="content" placeholder="Article Content" required></textarea>
-            <input type="text" name="image" placeholder="Image URL">
-            <input type="text" name="category" placeholder="Category">
-            <button type="button" onclick="saveNews('${sectionId}')">Add Article</button>
-        </div>
-        <div id="${sectionId}-list" class="news-list"></div>
-    `;
-    
-    container.appendChild(form);
-    return container;
-}
-
-// Save news article
-function saveNews(sectionId) {
-    const form = document.querySelector(`#${sectionId} form`);
-    const articles = contentStorage.get(`${sectionId}-articles`) || [];
-    
-    const newArticle = {
-        id: Date.now(),
-        title: form.querySelector('[name="title"]').value,
-        content: form.querySelector('[name="content"]').value,
-        image: form.querySelector('[name="image"]').value,
-        category: form.querySelector('[name="category"]').value,
-        date: new Date().toISOString()
-    };
-    
-    articles.push(newArticle);
-    contentStorage.save(`${sectionId}-articles`, articles);
-    
-    // Reset form and refresh list
-    form.reset();
-    loadNews(sectionId);
-}
-
-// Load news articles
-function loadNews(sectionId) {
-    const articles = contentStorage.get(`${sectionId}-articles`) || [];
-    const listContainer = document.getElementById(`${sectionId}-list`);
-    
-    if (listContainer) {
-        listContainer.innerHTML = articles.map(article => `
-            <div class="news-item">
-                <h3>${article.title}</h3>
-                <p>${article.content.substring(0, 100)}...</p>
-                <button onclick="deleteNews('${sectionId}', ${article.id})">Delete</button>
-            </div>
-        `).join('');
-    }
-}
-
-// Delete news article
-function deleteNews(sectionId, articleId) {
-    if (confirm('Are you sure you want to delete this article?')) {
-        const articles = contentStorage.get(`${sectionId}-articles`) || [];
-        const updatedArticles = articles.filter(article => article.id !== articleId);
-        contentStorage.save(`${sectionId}-articles`, updatedArticles);
-        loadNews(sectionId);
-    }
-}
-
-// Create settings form
 function createSettingsForm() {
     const form = document.createElement('form');
+    form.className = 'settings-container';
     form.innerHTML = `
-        <div class="settings-item">
-            <label>Site Title</label>
-            <input type="text" name="site-title">
+        <div class="settings-group">
+            <h3>General Settings</h3>
+            <div class="setting-item">
+                <label>Site Title</label>
+                <input type="text" name="site-title" placeholder="My Portfolio">
+            </div>
+            <div class="setting-item">
+                <label>Theme Color</label>
+                <input type="color" name="theme-color">
+            </div>
         </div>
-        <div class="settings-item">
-            <label>Contact Email</label>
-            <input type="email" name="contact-email">
+
+        <div class="settings-group">
+            <h3>Contact Information</h3>
+            <div class="setting-item">
+                <label>Business Address</label>
+                <textarea name="address" placeholder="123 Main Street, Anytown, USA"></textarea>
+            </div>
+            <div class="setting-item">
+                <label>Phone Number</label>
+                <input type="tel" name="phone" placeholder="(555) 123-4567">
+            </div>
+            <div class="setting-item">
+                <label>Email Address</label>
+                <input type="email" name="email" placeholder="contact@myportfolio.com">
+            </div>
         </div>
-        <div class="settings-item">
-            <label>Phone Number</label>
-            <input type="text" name="phone-number">
+
+        <div class="settings-group">
+            <h3>Social Media Links</h3>
+            <div class="setting-item">
+                <label>Facebook URL</label>
+                <input type="url" name="facebook" placeholder="https://facebook.com/...">
+            </div>
+            <div class="setting-item">
+                <label>Twitter URL</label>
+                <input type="url" name="twitter" placeholder="https://twitter.com/...">
+            </div>
+            <div class="setting-item">
+                <label>LinkedIn URL</label>
+                <input type="url" name="linkedin" placeholder="https://linkedin.com/in/...">
+            </div>
         </div>
-        <div class="settings-item">
-            <label>Address</label>
-            <textarea name="address"></textarea>
-        </div>
-        <button type="button" onclick="saveSettings()">Save Settings</button>
+
+        <button type="submit" class="save-btn">Save Settings</button>
     `;
-    
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const settings = {
+            siteTitle: e.target['site-title'].value,
+            themeColor: e.target['theme-color'].value,
+            address: e.target.address.value,
+            phone: e.target.phone.value,
+            email: e.target.email.value,
+            socialMedia: {
+                facebook: e.target.facebook.value,
+                twitter: e.target.twitter.value,
+                linkedin: e.target.linkedin.value
+            }
+        };
+        
+        contentStorage.save('site-settings', settings);
+        showNotification('Settings saved successfully!');
+        
+        // Update theme color if changed
+        if (settings.themeColor) {
+            document.documentElement.style.setProperty('--primary-color', settings.themeColor);
+        }
+    });
+
     return form;
 }
 
-// Save settings
-function saveSettings() {
-    const form = document.querySelector('#settings form');
-    const settings = {
-        siteTitle: form.querySelector('[name="site-title"]').value,
-        contactEmail: form.querySelector('[name="contact-email"]').value,
-        phoneNumber: form.querySelector('[name="phone-number"]').value,
-        address: form.querySelector('[name="address"]').value
-    };
-    
-    contentStorage.save('site-settings', settings);
-    alert('Settings saved successfully!');
-}
-
-// Load settings
 function loadSettings() {
-    const savedSettings = contentStorage.get('site-settings');
-    if (savedSettings) {
-        const form = document.querySelector('#settings form');
-        form.querySelector('[name="site-title"]').value = savedSettings.siteTitle || '';
-        form.querySelector('[name="contact-email"]').value = savedSettings.contactEmail || '';
-        form.querySelector('[name="phone-number"]').value = savedSettings.phoneNumber || '';
-        form.querySelector('[name="address"]').value = savedSettings.address || '';
+    const settings = contentStorage.get('site-settings');
+    if (settings) {
+        const form = document.querySelector('.settings-container');
+        if (!form) return;
+
+        form.querySelector('[name="site-title"]').value = settings.siteTitle || '';
+        form.querySelector('[name="theme-color"]').value = settings.themeColor || '#2c3e50';
+        form.querySelector('[name="address"]').value = settings.address || '';
+        form.querySelector('[name="phone"]').value = settings.phone || '';
+        form.querySelector('[name="email"]').value = settings.email || '';
+        form.querySelector('[name="facebook"]').value = settings.socialMedia?.facebook || '';
+        form.querySelector('[name="twitter"]').value = settings.socialMedia?.twitter || '';
+        form.querySelector('[name="linkedin"]').value = settings.socialMedia?.linkedin || '';
     }
 }
 
-// Handle logout
-document.getElementById('logout-btn')?.addEventListener('click', function() {
-    if (confirm('Are you sure you want to logout?')) {
-        window.location.href = '../index.html';
-    }
-});
+// Initialize time display
+function initializeTimeDisplay() {
+    const timeDisplay = document.createElement('div');
+    timeDisplay.className = 'time-display';
+    timeDisplay.innerHTML = `
+        <div class="current-time">Current Time (UTC): ${new Date().toISOString().replace('T', ' ').slice(0, 19)}</div>
+        <div class="current-user">User: rkritzar54</div>
+    `;
+    
+    document.querySelector('.admin-header-content').appendChild(timeDisplay);
+    
+    // Update time every second
+    setInterval(() => {
+        const currentTime = timeDisplay.querySelector('.current-time');
+        currentTime.textContent = `Current Time (UTC): ${new Date().toISOString().replace('T', ' ').slice(0, 19)}`;
+    }, 1000);
+}
+
+// Utility function to show notifications
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.classList.add('show');
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
+    }, 100);
+}
