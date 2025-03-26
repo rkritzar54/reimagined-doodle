@@ -129,8 +129,9 @@ function loadBusinessHours() {
         
         if (openCheckbox && startInput && endInput) {
             openCheckbox.checked = !schedule.closed;
-            startInput.value = schedule.open || '09:00';
-            endInput.value = schedule.close || '17:00';
+            // Convert EDT times to local for display
+            startInput.value = convertEDTToLocal(schedule.open);
+            endInput.value = convertEDTToLocal(schedule.close);
             startInput.disabled = schedule.closed;
             endInput.disabled = schedule.closed;
         }
@@ -143,10 +144,15 @@ function saveBusinessHours(e) {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     
     days.forEach(day => {
+        const startInput = this.querySelector(`[name="${day}-start"]`);
+        const endInput = this.querySelector(`[name="${day}-end"]`);
+        const openCheckbox = this.querySelector(`[name="${day}-open"]`);
+        
         hours[day] = {
-            open: this.querySelector(`[name="${day}-start"]`).value,
-            close: this.querySelector(`[name="${day}-end"]`).value,
-            closed: !this.querySelector(`[name="${day}-open"]`).checked
+            // Convert local times back to EDT for storage
+            open: convertLocalToEDT(startInput.value),
+            close: convertLocalToEDT(endInput.value),
+            closed: !openCheckbox.checked
         };
     });
 
@@ -369,6 +375,52 @@ function addHolidayItem(holiday = {}, index) {
     });
 
     item.querySelector('.remove-holiday').addEventListener('click', () => item.remove());
+}
+
+// Convert EDT time to user's local time
+function convertEDTToLocal(edtTimeStr) {
+    if (!edtTimeStr) return '';
+    
+    // Create a date object at midnight UTC
+    const date = new Date();
+    date.setUTCHours(0, 0, 0, 0);
+    
+    // Parse EDT time
+    const [hours, minutes] = edtTimeStr.split(':').map(Number);
+    
+    // Convert EDT to UTC (EDT is UTC-4)
+    const utcHours = (hours + 4) % 24;
+    
+    // Set UTC time
+    date.setUTCHours(utcHours, minutes);
+    
+    // Get local time components
+    const localHours = date.getHours();
+    const localMinutes = date.getMinutes();
+    
+    // Format in 24-hour time
+    return `${localHours.toString().padStart(2, '0')}:${localMinutes.toString().padStart(2, '0')}`;
+}
+
+// Convert local time to EDT
+function convertLocalToEDT(localTimeStr) {
+    if (!localTimeStr) return '';
+    
+    // Create a date object at midnight UTC
+    const date = new Date();
+    date.setUTCHours(0, 0, 0, 0);
+    
+    // Parse local time
+    const [hours, minutes] = localTimeStr.split(':').map(Number);
+    
+    // Set local time
+    date.setHours(hours, minutes);
+    
+    // Convert to EDT (UTC-4)
+    const edtHours = (24 + date.getUTCHours() - 4) % 24;
+    
+    // Format in 24-hour time
+    return `${edtHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
 // Booking Management
