@@ -2,26 +2,52 @@
 const CURRENT_TIMESTAMP = '2025-03-26 03:02:04';
 const CURRENT_USER = 'rkritzar54';
 
-// Wait for the DOM to be fully loaded
+// Wait for DOM content to load
 document.addEventListener('DOMContentLoaded', function() {
-    // Hamburger Menu Functionality
+    // Mobile Navigation Setup
+    setupMobileNavigation();
+});
+
+// Mobile Navigation Function
+function setupMobileNavigation() {
     const hamburger = document.getElementById('hamburger');
     const mobileMenu = document.querySelector('.mobile-menu');
     
     if (hamburger && mobileMenu) {
-        hamburger.addEventListener('click', function() {
+        // Hamburger click event
+        hamburger.addEventListener('click', function(e) {
+            e.stopPropagation();
             this.classList.toggle('active');
             mobileMenu.classList.toggle('active');
         });
 
-        // Close mobile menu when clicking a link
+        // Handle clicking links in mobile menu
         mobileMenu.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 hamburger.classList.remove('active');
                 mobileMenu.classList.remove('active');
             });
         });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (mobileMenu.classList.contains('active') && 
+                !hamburger.contains(e.target) && 
+                !mobileMenu.contains(e.target)) {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // Close menu on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+                hamburger.classList.remove('active');
+                mobileMenu.classList.remove('active');
+            }
+        });
     }
+}
 
     // Modal functionality for articles
     const modal = document.getElementById('articleModal');
