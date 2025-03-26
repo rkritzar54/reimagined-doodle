@@ -1,22 +1,16 @@
 // Constants
-const CURRENT_TIMESTAMP = '2025-03-26 00:47:28';
+const CURRENT_TIMESTAMP = '2025-03-26 01:16:05';
 const CURRENT_USER = 'rkritzar54';
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Force admin status for testing
-    localStorage.setItem('isAdmin', 'true');
-    
     // Check if user is admin
     if (localStorage.getItem('isAdmin') !== 'true') {
         console.log('Not an admin user');
         return;
     }
 
-    console.log('Admin user confirmed');
-
     // Initialize if we're on the admin page
     if (window.location.pathname.includes('admin.html')) {
-        console.log('On admin page, initializing...');
         initializeAdminPortal();
     }
 
@@ -25,8 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initializeAdminPortal() {
-    console.log('Initializing admin portal...');
-    
     // Initialize all admin sections
     initializeTabs();
     initializeBusinessHours();
@@ -41,46 +33,43 @@ function initializeTabs() {
     const tabs = document.querySelectorAll('.admin-tab');
     const tabLinks = document.querySelectorAll('.admin-sidebar li');
 
-    console.log('Found tabs:', tabs.length);
-    console.log('Found tabLinks:', tabLinks.length);
+    console.log('Initializing tabs:', tabs.length, 'tabs found');
 
     tabLinks.forEach(link => {
-        const tabId = link.getAttribute('data-tab');
-        console.log('Tab link found:', tabId);
-        
-        link.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default behavior
-            console.log('Clicked tab:', tabId);
-            
-            // Update active states
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabId = this.getAttribute('data-tab');
+            console.log('Switching to tab:', tabId);
+
+            // Remove active class from all tabs and links
             tabLinks.forEach(l => l.classList.remove('active'));
             tabs.forEach(t => t.classList.remove('active'));
-            
-            link.classList.add('active');
+
+            // Add active class to clicked link and corresponding tab
+            this.classList.add('active');
             const targetTab = document.getElementById(tabId);
             if (targetTab) {
                 targetTab.classList.add('active');
+                console.log('Tab activated:', tabId);
             } else {
                 console.error('Target tab not found:', tabId);
             }
-            
-            // Update URL hash
-            window.location.hash = tabId;
-            
+
+            // Update URL hash without scrolling
+            history.pushState(null, null, '#' + tabId);
+
             // Load tab-specific data
             loadTabData(tabId);
         });
     });
 
-    // Handle initial load
+    // Handle initial load based on URL hash
     const hash = window.location.hash.slice(1) || 'dashboard';
     const defaultTab = document.querySelector(`[data-tab="${hash}"]`);
     if (defaultTab) {
         defaultTab.click();
     } else {
-        console.error('Default tab not found:', hash);
-        // Fall back to first tab if available
-        tabLinks[0]?.click();
+        document.querySelector('.admin-sidebar li')?.click();
     }
 }
 
@@ -117,6 +106,8 @@ function initializeBusinessHours() {
             timeInputs.forEach(input => input.disabled = !this.checked);
         });
     });
+
+    loadBusinessHours();
 }
 
 function loadBusinessHours() {
@@ -129,8 +120,8 @@ function loadBusinessHours() {
         
         if (openCheckbox && startInput && endInput) {
             openCheckbox.checked = !schedule.closed;
-            startInput.value = schedule.open || '09:00';
-            endInput.value = schedule.close || '17:00';
+            startInput.value = schedule.open;
+            endInput.value = schedule.close;
             startInput.disabled = schedule.closed;
             endInput.disabled = schedule.closed;
         }
@@ -143,10 +134,14 @@ function saveBusinessHours(e) {
     const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     
     days.forEach(day => {
+        const startInput = this.querySelector(`[name="${day}-start"]`);
+        const endInput = this.querySelector(`[name="${day}-end"]`);
+        const openCheckbox = this.querySelector(`[name="${day}-open"]`);
+        
         hours[day] = {
-            open: this.querySelector(`[name="${day}-start"]`).value,
-            close: this.querySelector(`[name="${day}-end"]`).value,
-            closed: !this.querySelector(`[name="${day}-open"]`).checked
+            open: startInput.value,
+            close: endInput.value,
+            closed: !openCheckbox.checked
         };
     });
 
@@ -201,9 +196,7 @@ function saveSettings(e) {
             minNotice: parseInt(this.querySelector('[name="minNotice"]').value),
             maxFuture: parseInt(this.querySelector('[name="maxFuture"]').value),
             services: getServiceData()
-        },
-        lastUpdated: CURRENT_TIMESTAMP,
-        lastUpdatedBy: CURRENT_USER
+        }
     };
 
     localStorage.setItem('businessSettings', JSON.stringify(settings));
@@ -343,11 +336,11 @@ function addHolidayItem(holiday = {}, index) {
             </label>
             <div class="time-inputs" ${holiday.closed ? 'style="display: none;"' : ''}>
                 <input type="time" name="holiday-open-${index}" 
-                    value="${holiday.open || '09:00'}" 
+                    value="${holiday.open || '10:00'}" 
                     ${holiday.closed ? 'disabled' : ''}>
                 <span>to</span>
                 <input type="time" name="holiday-close-${index}" 
-                    value="${holiday.close || '17:00'}" 
+                    value="${holiday.close || '23:00'}" 
                     ${holiday.closed ? 'disabled' : ''}>
             </div>
         </div>
@@ -356,7 +349,6 @@ function addHolidayItem(holiday = {}, index) {
 
     holidayList.appendChild(item);
 
-    // Setup event listeners
     const closedCheckbox = item.querySelector(`[name="holiday-closed-${index}"]`);
     const timeInputs = item.querySelector('.time-inputs');
     const openInput = item.querySelector(`[name="holiday-open-${index}"]`);
@@ -416,6 +408,9 @@ function filterBookings(bookings) {
 }
 
 function createBookingCard(booking) {
+    const formattedDate = new Date(booking.date).toLocaleDateString();
+    const formattedTime = formatTime(booking.time);
+
     return `
         <div class="booking-card ${booking.status}">
             <div class="booking-header">
@@ -423,8 +418,8 @@ function createBookingCard(booking) {
                 <span class="booking-status">${booking.status}</span>
             </div>
             <div class="booking-details">
-                <p><i class="fas fa-calendar"></i> ${new Date(booking.date).toLocaleDateString()}</p>
-                <p><i class="fas fa-clock"></i> ${booking.time}</p>
+                <p><i class="fas fa-calendar"></i> ${formattedDate}</p>
+                <p><i class="fas fa-clock"></i> ${formattedTime}</p>
                 <p><i class="fas fa-tag"></i> ${booking.service}</p>
             </div>
             <div class="booking-actions">
@@ -479,13 +474,13 @@ function updateDashboardStats() {
 // Helper Functions
 function getDefaultBusinessHours() {
     return {
-        sunday: { open: '09:00', close: '17:00', closed: true },
-        monday: { open: '09:00', close: '17:00', closed: false },
-        tuesday: { open: '09:00', close: '17:00', closed: false },
-        wednesday: { open: '09:00', close: '17:00', closed: false },
-        thursday: { open: '09:00', close: '17:00', closed: false },
-        friday: { open: '09:00', close: '16:00', closed: false },
-        saturday: { open: '10:00', close: '15:00', closed: true }
+        sunday: { open: '10:00', close: '23:00', closed: true },
+        monday: { open: '10:00', close: '23:00', closed: false },
+        tuesday: { open: '10:00', close: '23:00', closed: false },
+        wednesday: { open: '10:00', close: '23:00', closed: false },
+        thursday: { open: '10:00', close: '23:00', closed: false },
+        friday: { open: '10:00', close: '23:00', closed: false },
+        saturday: { open: '10:00', close: '23:00', closed: true }
     };
 }
 
@@ -534,7 +529,7 @@ function getDefaultSettings() {
         bookingSettings: {
             minNotice: 24,
             maxFuture: 30,
-            services: ["Initial Consultation", "Follow-up Visit", "General Appointment", "Urgent Care"]
+            services: ["Initial Consultation", "Website Design", "Website Development", "Maintenance Service", "SEO Optimization"]
         }
     };
 }
@@ -614,7 +609,7 @@ function loadRecentActivity() {
         <div class="activity-item">
             <div class="activity-header">
                 <span>${activity.action}</span>
-                <small>${new Date(activity.timestamp).toLocaleString()}</small>
+                <small>${formatDateTime(activity.timestamp)}</small>
             </div>
             <p>${activity.description}</p>
         </div>
@@ -646,6 +641,32 @@ function addAdminNavLink() {
     const adminLink = document.createElement('li');
     adminLink.innerHTML = '<a href="admin.html">Admin Portal</a>';
     nav.appendChild(adminLink);
+}
+
+// Time and Date Formatting Utilities
+function formatDateTime(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
+function formatTime(time) {
+    if (!time) return '';
+    const [hours, minutes] = time.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes));
+    return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+    });
 }
 
 // Booking Helper Functions
@@ -687,26 +708,6 @@ function checkBusinessStatus() {
         
         if (closeMinutes < openMinutes) {
             closeMinutes += 24 * 60;
-        }
-        
-        return currentTime >= openMinutes && currentTime < closeMinutes;
-    }
-
-    // Regular business hours check
-    const day = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
-    const schedule = hours[day];
-    
-    if (schedule.closed) return false;
-    
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-    const [openHour, openMin] = schedule.open.split(':').map(Number);
-    const [closeHour, closeMin] = schedule.close.split(':').map(Number);
-    
-    let openMinutes = openHour * 60 + openMin;
-    let closeMinutes = closeHour * 60 + closeMin;
-    
-    if (closeMinutes < openMinutes) {
-        closeMinutes += 24 * 60;
     }
     
     return currentTime >= openMinutes && currentTime < closeMinutes;
