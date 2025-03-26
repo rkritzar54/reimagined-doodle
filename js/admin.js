@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize tab switching
     initializeTabs();
     
+    // Initialize dashboard status
+    updateDashboardStatus();
+    
     // Initialize all content editors
     initializeContentEditors();
     
@@ -28,9 +31,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize settings
     initializeSettings();
 
-    // Initialize current time display
+    // Initialize time display
     initializeTimeDisplay();
 });
+
+// Dashboard update function
+function updateDashboardStatus() {
+    const currentStatus = document.getElementById('current-status');
+    const hoursUpdated = document.getElementById('hours-updated');
+    const aboutUpdated = document.getElementById('about-updated');
+    const techNewsCount = document.getElementById('tech-news-count');
+    const crimeNewsCount = document.getElementById('crime-news-count');
+
+    // Update business hours status
+    const businessHours = contentStorage.get('business-hours');
+    if (businessHours) {
+        const now = new Date();
+        const currentDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
+        const todayHours = businessHours[currentDay];
+        
+        if (currentStatus) {
+            if (todayHours.closed) {
+                currentStatus.textContent = 'Closed Today';
+            } else {
+                currentStatus.textContent = `Open ${todayHours.open} - ${todayHours.close}`;
+            }
+        }
+        
+        if (hoursUpdated) {
+            const lastUpdate = contentStorage.get('business-hours-last-updated');
+            hoursUpdated.textContent = lastUpdate ? new Date(lastUpdate).toLocaleString() : 'Never';
+        }
+    }
+
+    // Update about page status
+    if (aboutUpdated) {
+        const lastUpdate = contentStorage.get('about-last-updated');
+        aboutUpdated.textContent = lastUpdate ? new Date(lastUpdate).toLocaleString() : 'Never';
+    }
+
+    // Update news counts
+    if (techNewsCount) {
+        const techNews = contentStorage.get('tech-news') || [];
+        techNewsCount.textContent = techNews.length;
+    }
+    
+    if (crimeNewsCount) {
+        const crimeNews = contentStorage.get('crime-news') || [];
+        crimeNewsCount.textContent = crimeNews.length;
+    }
+}
 
 // Update admin user information
 function updateAdminUser() {
@@ -39,6 +89,34 @@ function updateAdminUser() {
     if (adminUsername && adminAvatar) {
         adminUsername.textContent = 'rkritzar54';
         adminAvatar.src = 'https://github.com/rkritzar54.png';
+    }
+}
+
+// Time display formatter and updater
+function updateTimeAndUser() {
+    const timeStr = new Date().toISOString()
+        .replace('T', ' ')
+        .slice(0, 19);
+
+    return `
+        <div class="time-display">
+            <div class="current-time">Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): ${timeStr}</div>
+            <div class="current-user">Current User's Login: rkritzar54</div>
+        </div>
+    `;
+}
+
+function initializeTimeDisplay() {
+    const headerContent = document.querySelector('.admin-header-content');
+    if (headerContent) {
+        const timeDisplay = document.createElement('div');
+        timeDisplay.innerHTML = updateTimeAndUser();
+        headerContent.appendChild(timeDisplay);
+
+        // Update time every second
+        setInterval(() => {
+            timeDisplay.innerHTML = updateTimeAndUser();
+        }, 1000);
     }
 }
 
@@ -137,6 +215,8 @@ function createEditor(id, title) {
     const saveBtn = container.querySelector('.save-btn');
     saveBtn.addEventListener('click', () => {
         contentStorage.save(id, textarea.value);
+        contentStorage.save('about-last-updated', new Date().toISOString());
+        updateDashboardStatus();
         showNotification('Content saved successfully!');
     });
 
@@ -236,6 +316,8 @@ function saveBusinessHours() {
     });
     
     contentStorage.save('business-hours', hours);
+    contentStorage.save('business-hours-last-updated', new Date().toISOString());
+    updateDashboardStatus();
     showNotification('Business hours saved successfully!');
 }
 
@@ -289,6 +371,7 @@ function initializeNewsSection(id, title) {
         
         e.target.reset();
         loadArticles(newsList, articles);
+        updateDashboardStatus();
         showNotification('Article added successfully!');
     });
 
@@ -330,6 +413,7 @@ function deleteArticle(id) {
             loadArticles(document.querySelector('#crime-news .articles-list'), updatedCrimeNews);
         }
         
+        updateDashboardStatus();
         showNotification('Article deleted successfully!');
     }
 }
@@ -413,6 +497,8 @@ function createSettingsForm() {
         };
         
         contentStorage.save('site-settings', settings);
+        contentStorage.save('settings-last-updated', new Date().toISOString());
+        updateDashboardStatus();
         showNotification('Settings saved successfully!');
         
         // Update theme color if changed
@@ -439,24 +525,6 @@ function loadSettings() {
         form.querySelector('[name="twitter"]').value = settings.socialMedia?.twitter || '';
         form.querySelector('[name="linkedin"]').value = settings.socialMedia?.linkedin || '';
     }
-}
-
-// Initialize time display
-function initializeTimeDisplay() {
-    const timeDisplay = document.createElement('div');
-    timeDisplay.className = 'time-display';
-    timeDisplay.innerHTML = `
-        <div class="current-time">Current Time (UTC): ${new Date().toISOString().replace('T', ' ').slice(0, 19)}</div>
-        <div class="current-user">User: rkritzar54</div>
-    `;
-    
-    document.querySelector('.admin-header-content').appendChild(timeDisplay);
-    
-    // Update time every second
-    setInterval(() => {
-        const currentTime = timeDisplay.querySelector('.current-time');
-        currentTime.textContent = `Current Time (UTC): ${new Date().toISOString().replace('T', ' ').slice(0, 19)}`;
-    }, 1000);
 }
 
 // Utility function to show notifications
