@@ -655,6 +655,18 @@ footer {
     text-align: center;
 }
 
+#footerBusinessName,
+#footerBusinessName a {
+    color: white !important;
+    text-decoration: none;
+}
+
+.footer-left h3,
+.footer-right h3 {
+    color: white;
+    margin-bottom: 1rem;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     header {
