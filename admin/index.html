@@ -11,8 +11,8 @@
         <div class="admin-header-content">
             <div class="admin-title">Admin Portal</div>
             <div class="admin-user">
-                <img src="https://github.com/your_github_username.png" alt="Your Avatar" class="admin-avatar">
-                <span class="admin-username">your_github_username</span>
+                <img src="https://github.com/rkritzar54.png" alt="Admin Avatar" class="admin-avatar">
+                <span class="admin-username">rkritzar54</span>
             </div>
         </div>
     </header>
@@ -35,35 +35,168 @@
         </aside>
 
         <main class="admin-content">
+            <!-- Dashboard Section -->
             <div class="tab-content active" id="dashboard">
                 <h2>Dashboard</h2>
-                <p>Welcome to the admin portal!</p>
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <h3>Business Hours</h3>
+                        <p>Status: <span id="current-status">Loading...</span></p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>News Articles</h3>
+                        <p>Tech News: <span id="tech-news-count">0</span></p>
+                        <p>Crime News: <span id="crime-news-count">0</span></p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Last Updated</h3>
+                        <p>About Page: <span id="about-updated">Never</span></p>
+                        <p>Business Hours: <span id="hours-updated">Never</span></p>
+                    </div>
                 </div>
+            </div>
 
+            <!-- Business Hours Section -->
             <div class="tab-content" id="business-hours">
                 <h2>Manage Business Hours</h2>
+                <div class="business-hours-form">
+                    <div class="hours-grid">
+                        <!-- Days will be populated by JavaScript -->
+                    </div>
+                    <div class="special-hours">
+                        <h3>Special Hours / Holidays</h3>
+                        <button id="add-special-hours">Add Special Hours</button>
+                        <div id="special-hours-list"></div>
+                    </div>
                 </div>
+            </div>
 
+            <!-- About Page Section -->
             <div class="tab-content" id="about">
                 <h2>Edit About Page</h2>
+                <div class="editor-container">
+                    <div class="editor-toolbar">
+                        <button data-command="bold" title="Bold"><strong>B</strong></button>
+                        <button data-command="italic" title="Italic"><em>I</em></button>
+                        <button data-command="underline" title="Underline"><u>U</u></button>
+                        <button data-command="createlink" title="Add Link"><span>🔗</span></button>
+                    </div>
+                    <div class="editor-main">
+                        <textarea id="about-editor" class="content-editor"></textarea>
+                    </div>
+                    <div class="editor-preview">
+                        <h3>Preview</h3>
+                        <div id="about-preview"></div>
+                    </div>
                 </div>
+            </div>
 
+            <!-- Tech News Section -->
             <div class="tab-content" id="tech-news">
                 <h2>Manage Tech News</h2>
+                <div class="news-manager">
+                    <div class="news-form">
+                        <h3>Add New Article</h3>
+                        <form id="tech-news-form">
+                            <input type="text" name="title" placeholder="Article Title" required>
+                            <input type="text" name="category" placeholder="Category">
+                            <input type="text" name="image" placeholder="Image URL">
+                            <textarea name="content" placeholder="Article Content" required></textarea>
+                            <button type="submit">Add Article</button>
+                        </form>
+                    </div>
+                    <div class="news-list">
+                        <h3>Published Articles</h3>
+                        <div id="tech-news-list" class="articles-list"></div>
+                    </div>
                 </div>
+            </div>
 
+            <!-- Crime News Section -->
             <div class="tab-content" id="crime-news">
                 <h2>Manage Crime News</h2>
+                <div class="news-manager">
+                    <div class="news-form">
+                        <h3>Add New Article</h3>
+                        <form id="crime-news-form">
+                            <input type="text" name="title" placeholder="Article Title" required>
+                            <input type="text" name="category" placeholder="Category">
+                            <input type="text" name="image" placeholder="Image URL">
+                            <textarea name="content" placeholder="Article Content" required></textarea>
+                            <button type="submit">Add Article</button>
+                        </form>
+                    </div>
+                    <div class="news-list">
+                        <h3>Published Articles</h3>
+                        <div id="crime-news-list" class="articles-list"></div>
+                    </div>
                 </div>
+            </div>
 
+            <!-- Settings Section -->
             <div class="tab-content" id="settings">
                 <h2>Website Settings</h2>
-                </div>
+                <div class="settings-container">
+                    <form id="settings-form">
+                        <div class="settings-group">
+                            <h3>General Settings</h3>
+                            <div class="setting-item">
+                                <label>Site Title</label>
+                                <input type="text" name="site-title" placeholder="My Portfolio">
+                            </div>
+                            <div class="setting-item">
+                                <label>Theme Color</label>
+                                <input type="color" name="theme-color">
+                            </div>
+                        </div>
 
+                        <div class="settings-group">
+                            <h3>Contact Information</h3>
+                            <div class="setting-item">
+                                <label>Business Address</label>
+                                <textarea name="address" placeholder="123 Main Street, Anytown, USA"></textarea>
+                            </div>
+                            <div class="setting-item">
+                                <label>Phone Number</label>
+                                <input type="tel" name="phone" placeholder="(555) 123-4567">
+                            </div>
+                            <div class="setting-item">
+                                <label>Email Address</label>
+                                <input type="email" name="email" placeholder="contact@myportfolio.com">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3>Social Media Links</h3>
+                            <div class="setting-item">
+                                <label>Facebook URL</label>
+                                <input type="url" name="facebook" placeholder="https://facebook.com/...">
+                            </div>
+                            <div class="setting-item">
+                                <label>Twitter URL</label>
+                                <input type="url" name="twitter" placeholder="https://twitter.com/...">
+                            </div>
+                            <div class="setting-item">
+                                <label>LinkedIn URL</label>
+                                <input type="url" name="linkedin" placeholder="https://linkedin.com/in/...">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="save-settings">Save Settings</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Logout Section -->
             <div class="tab-content" id="logout">
                 <h2>Logout</h2>
-                <p>Are you sure you want to logout?</p>
-                <button id="logout-btn">Logout</button>
+                <div class="logout-container">
+                    <p>Are you sure you want to logout?</p>
+                    <div class="logout-actions">
+                        <button id="logout-btn" class="danger-btn">Logout</button>
+                        <button class="cancel-btn" onclick="document.querySelector('[data-tab=dashboard]').click()">Cancel</button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
