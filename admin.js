@@ -119,6 +119,7 @@ function initializeBusinessHours() {
     });
 }
 
+// Update these two functions to use the new conversion functions
 function loadBusinessHours() {
     const hours = JSON.parse(localStorage.getItem('businessHours')) || getDefaultBusinessHours();
     
@@ -129,9 +130,9 @@ function loadBusinessHours() {
         
         if (openCheckbox && startInput && endInput) {
             openCheckbox.checked = !schedule.closed;
-            // Convert EDT times to local for display
-            startInput.value = convertEDTToLocal(schedule.open);
-            endInput.value = convertEDTToLocal(schedule.close);
+            // Show times in 12-hour format for display
+            startInput.value = schedule.open;  // Keep 24-hour format for input[type="time"]
+            endInput.value = schedule.close;   // Keep 24-hour format for input[type="time"]
             startInput.disabled = schedule.closed;
             endInput.disabled = schedule.closed;
         }
@@ -149,9 +150,9 @@ function saveBusinessHours(e) {
         const openCheckbox = this.querySelector(`[name="${day}-open"]`);
         
         hours[day] = {
-            // Convert local times back to EDT for storage
-            open: convertLocalToEDT(startInput.value),
-            close: convertLocalToEDT(endInput.value),
+            // Time inputs are already in 24-hour format
+            open: startInput.value,
+            close: endInput.value,
             closed: !openCheckbox.checked
         };
     });
@@ -159,6 +160,31 @@ function saveBusinessHours(e) {
     localStorage.setItem('businessHours', JSON.stringify(hours));
     addActivity('Business hours updated');
     showNotification('Business hours saved successfully!');
+}
+
+// Time conversion functions
+function formatDisplayTime(time24) {
+    // Converts 24-hour time (13:00) to 12-hour time (1:00 PM)
+    if (!time24) return '';
+    
+    const [hours, minutes] = time24.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+}
+
+function convertTo24Hour(time12) {
+    // Converts 12-hour time (1:00 PM) to 24-hour time (13:00)
+    if (!time12) return '';
+    
+    const [time, period] = time12.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 }
 
 // Settings Management
