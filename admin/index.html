@@ -4,21 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/admin.css">
 </head>
-<body class="admin-body">
+<body>
     <header class="admin-header">
         <div class="admin-header-content">
-            <div class="admin-info">
+            <div class="admin-title">Admin Dashboard</div>
+            <div class="admin-user">
                 <img src="https://github.com/rkritzar54.png" alt="Admin Avatar" class="admin-avatar">
                 <span class="admin-username">rkritzar54</span>
             </div>
+        </div>
+        <div class="time-display">
+            <div class="current-time">Current Date and Time (UTC - YYYY-MM-DD HH:MM:SS formatted): 2025-03-26 23:57:49</div>
+            <div class="current-user">Current User's Login: rkritzar54</div>
         </div>
     </header>
 
     <div class="admin-container">
         <nav class="admin-sidebar">
+            <div class="sidebar-header">
+                <img src="images/logo.png" alt="Logo" class="logo">
+                <h3>Admin Panel</h3>
+            </div>
             <ul class="admin-tabs">
                 <li class="tab-item active" data-tab="dashboard">
                     <i class="icon">📊</i>
@@ -55,17 +63,17 @@
             <!-- Dashboard Tab -->
             <div id="dashboard" class="tab-content active">
                 <h2>Dashboard Overview</h2>
-                <div class="dashboard-grid">
-                    <div class="dashboard-card">
+                <div class="dashboard-stats">
+                    <div class="stat-card">
                         <h3>Business Status</h3>
                         <p>Current Status: <span id="current-status" class="status">Loading...</span></p>
                         <p>Last Updated: <span id="hours-updated">Never</span></p>
                     </div>
-                    <div class="dashboard-card">
+                    <div class="stat-card">
                         <h3>About Page</h3>
                         <p>Last Updated: <span id="about-updated">Never</span></p>
                     </div>
-                    <div class="dashboard-card">
+                    <div class="stat-card">
                         <h3>News Articles</h3>
                         <p>Tech News: <span id="tech-news-count">0</span> articles</p>
                         <p>Crime News: <span id="crime-news-count">0</span> articles</p>
@@ -76,31 +84,136 @@
             <!-- About Page Tab -->
             <div id="about" class="tab-content">
                 <h2>About Page Editor</h2>
-                <!-- Content will be loaded dynamically -->
+                <div class="editor-container">
+                    <div class="editor-toolbar">
+                        <button type="button" data-command="bold"><strong>B</strong></button>
+                        <button type="button" data-command="italic"><em>I</em></button>
+                        <button type="button" data-command="underline"><u>U</u></button>
+                    </div>
+                    <textarea id="about-content" class="content-editor" placeholder="Enter about page content..."></textarea>
+                    <div class="editor-preview"></div>
+                    <button type="button" class="btn btn-primary save-btn">Save Changes</button>
+                </div>
             </div>
 
             <!-- Business Hours Tab -->
             <div id="business-hours" class="tab-content">
                 <h2>Business Hours Editor</h2>
-                <!-- Content will be loaded dynamically -->
+                <div class="business-hours-form">
+                    <form id="business-hours-form">
+                        <!-- Days will be populated by JavaScript -->
+                    </form>
+                </div>
             </div>
 
             <!-- Tech News Tab -->
             <div id="tech-news" class="tab-content">
                 <h2>Tech News Manager</h2>
-                <!-- Content will be loaded dynamically -->
+                <div class="news-manager">
+                    <div class="news-form">
+                        <h3>Add New Article</h3>
+                        <form id="tech-news-form">
+                            <div class="form-group">
+                                <label for="tech-title">Title</label>
+                                <input type="text" id="tech-title" name="title" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="tech-category">Category</label>
+                                <input type="text" id="tech-category" name="category">
+                            </div>
+                            <div class="form-group">
+                                <label for="tech-content">Content</label>
+                                <textarea id="tech-content" name="content" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Article</button>
+                        </form>
+                    </div>
+                    <div class="articles-list" id="tech-articles">
+                        <!-- Articles will be populated by JavaScript -->
+                    </div>
+                </div>
             </div>
 
             <!-- Crime News Tab -->
             <div id="crime-news" class="tab-content">
                 <h2>Crime News Manager</h2>
-                <!-- Content will be loaded dynamically -->
+                <div class="news-manager">
+                    <div class="news-form">
+                        <h3>Add New Article</h3>
+                        <form id="crime-news-form">
+                            <div class="form-group">
+                                <label for="crime-title">Title</label>
+                                <input type="text" id="crime-title" name="title" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="crime-category">Category</label>
+                                <input type="text" id="crime-category" name="category">
+                            </div>
+                            <div class="form-group">
+                                <label for="crime-content">Content</label>
+                                <textarea id="crime-content" name="content" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Article</button>
+                        </form>
+                    </div>
+                    <div class="articles-list" id="crime-articles">
+                        <!-- Articles will be populated by JavaScript -->
+                    </div>
+                </div>
             </div>
 
             <!-- Settings Tab -->
             <div id="settings" class="tab-content">
                 <h2>Website Settings</h2>
-                <!-- Content will be loaded dynamically -->
+                <div class="settings-container">
+                    <form id="settings-form">
+                        <div class="settings-group">
+                            <h3>General Settings</h3>
+                            <div class="setting-item">
+                                <label for="site-title">Site Title</label>
+                                <input type="text" id="site-title" name="site-title" placeholder="My Portfolio">
+                            </div>
+                            <div class="setting-item">
+                                <label for="theme-color">Theme Color</label>
+                                <input type="color" id="theme-color" name="theme-color" value="#2c3e50">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3>Contact Information</h3>
+                            <div class="setting-item">
+                                <label for="address">Business Address</label>
+                                <textarea id="address" name="address" placeholder="123 Main Street, Anytown, USA"></textarea>
+                            </div>
+                            <div class="setting-item">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567">
+                            </div>
+                            <div class="setting-item">
+                                <label for="email">Email Address</label>
+                                <input type="email" id="email" name="email" placeholder="contact@myportfolio.com">
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3>Social Media Links</h3>
+                            <div class="setting-item">
+                                <label for="facebook">Facebook URL</label>
+                                <input type="url" id="facebook" name="facebook" placeholder="https://facebook.com/...">
+                            </div>
+                            <div class="setting-item">
+                                <label for="twitter">Twitter URL</label>
+                                <input type="url" id="twitter" name="twitter" placeholder="https://twitter.com/...">
+                            </div>
+                            <div class="setting-item">
+                                <label for="linkedin">LinkedIn URL</label>
+                                <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/...">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </form>
+                </div>
             </div>
         </main>
     </div>
